@@ -4,24 +4,17 @@ import {
     PieChart, Pie, Cell, AreaChart, Area, LineChart, Line
 } from 'recharts';
 import { PieChartIcon, TrendingUp, MoreHorizontal, Trophy, Gamepad2, Tag } from 'lucide-react';
+import { toEUR } from '../utils/currency';
 
 const COLORS = ['#4ade80', '#22c55e', '#facc15', '#f59e0b', '#86efac', '#eab308', '#16a34a', '#d97706', '#15803d', '#b45309'];
 
 const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false }) => {
 
-    const toEUR = (price, currency) => {
-        if (currency === 'EUR') return price;
-        if (currency === 'USD') return price * exchangeRate;
-        if (currency === 'GBP') return price * 1.17;
-        if (currency === 'JPY') return price * 0.0062;
-        return price;
-    };
-
     // 1. Platform donut
     const platformData = useMemo(() => {
         return transactions.reduce((acc, t) => {
             const existing = acc.find(p => p.name === t.platform);
-            const price = toEUR(parseFloat(t.price) || 0, t.currency);
+            const price = toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate);
             if (existing) existing.value += price;
             else acc.push({ name: t.platform, value: price });
             return acc;
@@ -35,7 +28,7 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
         return transactions.reduce((acc, t) => {
             const storeName = t.store || 'Inconnu';
             const existing = acc.find(s => s.name === storeName);
-            const price = toEUR(parseFloat(t.price) || 0, t.currency);
+            const price = toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate);
             if (existing) existing.value += price;
             else acc.push({ name: storeName, value: price });
             return acc;
@@ -50,7 +43,7 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
             const date = new Date(t.purchase_date);
             const monthYear = date.toLocaleString('fr-FR', { month: 'short', year: '2-digit' });
             const existing = acc.find(m => m.name === monthYear);
-            const price = toEUR(parseFloat(t.price) || 0, t.currency);
+            const price = toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate);
             if (existing) existing.value += price;
             else acc.push({ name: monthYear, value: price, dateObj: date });
             return acc;
@@ -71,7 +64,7 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
         return transactions.reduce((acc, t) => {
             const title = t.title || 'Inconnu';
             const existing = acc.find(g => g.name === title);
-            const price = toEUR(parseFloat(t.price) || 0, t.currency);
+            const price = toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate);
             if (existing) existing.value += price;
             else acc.push({ name: title, value: price });
             return acc;
@@ -83,7 +76,7 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
         return transactions.reduce((acc, t) => {
             const genreName = t.genre || 'Other';
             const existing = acc.find(g => g.name === genreName);
-            const price = toEUR(parseFloat(t.price) || 0, t.currency);
+            const price = toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate);
             if (existing) {
                 existing.value += price;
                 existing.count += 1;
@@ -99,14 +92,14 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
         if (active && payload && payload.length) {
             return (
                 <div style={{
-                    background: '#ffffff',
-                    border: 'none',
+                    background: 'var(--card-bg)',
+                    border: '1px solid var(--card-border)',
                     borderRadius: '12px',
                     padding: '12px 16px',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.15)'
+                    boxShadow: 'var(--card-shadow)'
                 }}>
-                    <p style={{ color: '#111827', fontSize: '0.9rem', marginBottom: '8px', fontWeight: '600' }}>{label}</p>
-                    <p style={{ color: '#111827', fontSize: '1.05rem', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                    <p style={{ color: 'var(--color-text)', fontSize: '0.9rem', marginBottom: '8px', fontWeight: '600' }}>{label}</p>
+                    <p style={{ color: 'var(--color-text)', fontSize: '1.05rem', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                         <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: payload[0].fill || payload[0].stroke || '#f59e0b' }}></span>
                         {payload[0].value.toLocaleString('fr-FR')} €
                     </p>

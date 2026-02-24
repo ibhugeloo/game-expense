@@ -103,8 +103,8 @@ const UpgradeModal = ({ onClose, currentPlan }) => {
                         boxShadow: '0 4px 16px rgba(245, 158, 11, 0.3)',
                     }}
                     onClick={() => {
-                        // TODO: Stripe checkout
-                        window.open('mailto:contact@mosaic-analytics.com?subject=Upgrade Premium', '_blank');
+                        // TODO: Stripe checkout integration
+                        onClose();
                     }}
                 >
                     <Zap size={18} />

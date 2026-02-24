@@ -1,18 +1,11 @@
 import React, { useMemo } from 'react';
 import { Gamepad2, TrendingUp, TrendingDown, Minus, DollarSign, Tag, BarChart3, Clock } from 'lucide-react';
+import { toEUR } from '../utils/currency';
 
 const StatsOverview = ({ transactions, exchangeRate = 0.92 }) => {
-    // Normalize price to EUR
-    const toEUR = (price, currency) => {
-        if (currency === 'EUR') return price;
-        if (currency === 'USD') return price * exchangeRate;
-        if (currency === 'GBP') return price * 1.17;
-        if (currency === 'JPY') return price * 0.0062;
-        return price;
-    };
 
     const totalGames = transactions.length;
-    const totalSpent = transactions.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency), 0);
+    const totalSpent = transactions.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate), 0);
     const avgPrice = totalGames > 0 ? totalSpent / totalGames : 0;
     const completedGames = transactions.filter(t => t.status === 'Completed').length;
     const totalHours = transactions.reduce((acc, t) => acc + (parseFloat(t.hours_played) || 0), 0);
@@ -38,8 +31,8 @@ const StatsOverview = ({ transactions, exchangeRate = 0.92 }) => {
 
         const currentCount = currentMonthTx.length;
         const prevCount = prevMonthTx.length;
-        const currentSpent = currentMonthTx.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency), 0);
-        const prevSpent = prevMonthTx.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency), 0);
+        const currentSpent = currentMonthTx.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate), 0);
+        const prevSpent = prevMonthTx.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate), 0);
         const currentCompleted = currentMonthTx.filter(t => t.status === 'Completed').length;
         const prevCompleted = prevMonthTx.filter(t => t.status === 'Completed').length;
         const currentHours = currentMonthTx.reduce((acc, t) => acc + (parseFloat(t.hours_played) || 0), 0);

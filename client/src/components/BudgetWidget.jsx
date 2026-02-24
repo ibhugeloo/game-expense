@@ -1,15 +1,9 @@
 import React from 'react';
 import { Wallet, AlertTriangle } from 'lucide-react';
+import { toEUR } from '../utils/currency';
 
 const BudgetWidget = ({ budget, transactions, exchangeRate = 0.92 }) => {
     if (!budget) return null;
-
-    const toEUR = (price, currency) => {
-        if (currency === 'EUR') return price;
-        if (currency === 'USD') return price * exchangeRate;
-        if (currency === 'GBP') return price * 1.17;
-        return price;
-    };
 
     const now = new Date();
     const currentMonthTx = transactions.filter(t => {
@@ -17,7 +11,7 @@ const BudgetWidget = ({ budget, transactions, exchangeRate = 0.92 }) => {
         return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     });
 
-    const spent = currentMonthTx.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency), 0);
+    const spent = currentMonthTx.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate), 0);
     const budgetAmount = parseFloat(budget.amount) || 0;
     const pct = budgetAmount > 0 ? Math.min((spent / budgetAmount) * 100, 100) : 0;
     const remaining = budgetAmount - spent;

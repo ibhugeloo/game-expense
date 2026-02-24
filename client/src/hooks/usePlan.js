@@ -23,40 +23,39 @@ export function usePlan(userId) {
     const [plan, setPlan] = useState('free');
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    const fetchPlan = async () => {
         if (!userId) return;
+        try {
+            const { data, error } = await supabase
+                .from('subscriptions')
+                .select('plan, expires_at')
+                .eq('user_id', userId)
+                .single();
 
-        const fetchPlan = async () => {
-            try {
-                const { data, error } = await supabase
+            if (error && error.code === 'PGRST116') {
+                // No subscription row — create one with free plan
+                await supabase
                     .from('subscriptions')
-                    .select('plan, expires_at')
-                    .eq('user_id', userId)
-                    .single();
-
-                if (error && error.code === 'PGRST116') {
-                    // No subscription row — create one with free plan
-                    await supabase
-                        .from('subscriptions')
-                        .insert({ user_id: userId, plan: 'free' });
-                    setPlan('free');
-                } else if (data) {
-                    // Check if premium has expired
-                    if (data.plan === 'premium' && data.expires_at) {
-                        const expired = new Date(data.expires_at) < new Date();
-                        setPlan(expired ? 'free' : 'premium');
-                    } else {
-                        setPlan(data.plan);
-                    }
-                }
-            } catch (err) {
-                console.warn('Plan fetch error:', err);
+                    .insert({ user_id: userId, plan: 'free' });
                 setPlan('free');
-            } finally {
-                setLoading(false);
+            } else if (data) {
+                // Check if premium has expired
+                if (data.plan === 'premium' && data.expires_at) {
+                    const expired = new Date(data.expires_at) < new Date();
+                    setPlan(expired ? 'free' : 'premium');
+                } else {
+                    setPlan(data.plan);
+                }
             }
-        };
+        } catch (err) {
+            console.warn('Plan fetch error:', err);
+            setPlan('free');
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchPlan();
     }, [userId]);
 
@@ -84,5 +83,7 @@ export function usePlan(userId) {
         }
     };
 
-    return { plan, isPremium, limits, loading, canAddTransaction, upgradeToPremium };
+    const refreshPlan = () => fetchPlan();
+
+    return { plan, isPremium, limits, loading, canAddTransaction, upgradeToPremium, refreshPlan };
 }

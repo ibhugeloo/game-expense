@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Filter, Search, Trash2, Edit2, Download, ChevronLeft, ChevronRight, Gamepad2, Clock } from 'lucide-react';
+import { toEUR } from '../utils/currency';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -14,20 +15,6 @@ const TransactionList = ({ transactions, onDelete, onEdit, exchangeRate = 0.92, 
     const [currency, setCurrency] = useState('All');
     const [currentPage, setCurrentPage] = useState(1);
     const [sortConfig, setSortConfig] = useState({ key: 'purchase_date', direction: 'descending' });
-
-    const platforms = ['All', ...new Set(transactions.map(t => t.platform))];
-    const stores = ['All', ...new Set(transactions.map(t => t.store).filter(Boolean))];
-    const currencies = ['All', ...new Set(transactions.map(t => t.currency))];
-    const genres = ['All', ...new Set(transactions.map(t => t.genre).filter(Boolean))];
-
-    // Normalize to EUR
-    const toEUR = (price, cur) => {
-        if (cur === 'EUR') return price;
-        if (cur === 'USD') return price * exchangeRate;
-        if (cur === 'GBP') return price * 1.17;
-        if (cur === 'JPY') return price * 0.0062;
-        return price;
-    };
 
     // Filter
     const filtered = useMemo(() => {
@@ -91,7 +78,7 @@ const TransactionList = ({ transactions, onDelete, onEdit, exchangeRate = 0.92, 
 
     const getSortIndicator = (key) => sortConfig.key === key ? (sortConfig.direction === 'ascending' ? ' ▲' : ' ▼') : '';
 
-    const totalSpent = filtered.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency), 0);
+    const totalSpent = filtered.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate), 0);
 
     // CSV Export
     const exportCSV = () => {
@@ -123,7 +110,7 @@ const TransactionList = ({ transactions, onDelete, onEdit, exchangeRate = 0.92, 
     const getCostPerHour = (t) => {
         const hours = parseFloat(t.hours_played) || 0;
         if (hours === 0) return null;
-        const priceEur = toEUR(parseFloat(t.price) || 0, t.currency);
+        const priceEur = toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate);
         return priceEur / hours;
     };
 
