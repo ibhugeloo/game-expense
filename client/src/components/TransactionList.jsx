@@ -4,6 +4,16 @@ import { toEUR } from '../utils/currency';
 
 const ITEMS_PER_PAGE = 20;
 
+const TYPE_LABELS = {
+    game: 'Jeu',
+    dlc: 'DLC',
+    skin: 'Skin',
+    battle_pass: 'Battle Pass',
+    currency: 'Monnaie',
+    loot_box: 'Loot Box',
+    subscription: 'Abo',
+};
+
 const TransactionList = ({ transactions, onDelete, onEdit, exchangeRate = 0.92, isPremium = false }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [platform, setPlatform] = useState('All');
@@ -13,6 +23,7 @@ const TransactionList = ({ transactions, onDelete, onEdit, exchangeRate = 0.92, 
     const [dateStart, setDateStart] = useState('');
     const [dateEnd, setDateEnd] = useState('');
     const [currency, setCurrency] = useState('All');
+    const [type, setType] = useState('All');
     const [currentPage, setCurrentPage] = useState(1);
     const [sortConfig, setSortConfig] = useState({ key: 'purchase_date', direction: 'descending' });
 
@@ -31,14 +42,15 @@ const TransactionList = ({ transactions, onDelete, onEdit, exchangeRate = 0.92, 
             const matchStore = store === 'All' || t.store === store;
             const matchCurrency = currency === 'All' || t.currency === currency;
             const matchGenre = genre === 'All' || t.genre === genre;
+            const matchType = type === 'All' || (t.type || 'game') === type;
 
             let matchDate = true;
             if (dateStart) matchDate = matchDate && new Date(t.purchase_date) >= new Date(dateStart);
             if (dateEnd) matchDate = matchDate && new Date(t.purchase_date) <= new Date(dateEnd);
 
-            return matchSearch && matchPlatform && matchStatus && matchStore && matchCurrency && matchGenre && matchDate;
+            return matchSearch && matchPlatform && matchStatus && matchStore && matchCurrency && matchGenre && matchType && matchDate;
         });
-    }, [transactions, searchTerm, platform, status, store, currency, genre, dateStart, dateEnd]);
+    }, [transactions, searchTerm, platform, status, store, currency, genre, type, dateStart, dateEnd]);
 
     // Sort
     const sortedData = useMemo(() => {
@@ -74,7 +86,7 @@ const TransactionList = ({ transactions, onDelete, onEdit, exchangeRate = 0.92, 
     const paginatedData = sortedData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     // Reset page on filter change
-    React.useEffect(() => { setCurrentPage(1); }, [searchTerm, platform, status, store, genre, currency, dateStart, dateEnd]);
+    React.useEffect(() => { setCurrentPage(1); }, [searchTerm, platform, status, store, genre, currency, type, dateStart, dateEnd]);
 
     const requestSort = (key) => {
         let direction = 'ascending';
@@ -88,10 +100,11 @@ const TransactionList = ({ transactions, onDelete, onEdit, exchangeRate = 0.92, 
 
     // CSV Export
     const exportCSV = () => {
-        const headers = ['Date', 'Titre', 'Plateforme', 'Prix', 'Devise', 'Lieu', 'Statut', 'Genre', 'Note', 'Heures', 'Notes'];
+        const headers = ['Date', 'Titre', 'Type', 'Plateforme', 'Prix', 'Devise', 'Lieu', 'Statut', 'Genre', 'Note', 'Heures', 'Notes'];
         const rows = sortedData.map(t => [
             t.purchase_date,
             `"${t.title}"`,
+            t.type || 'game',
             t.platform,
             t.price,
             t.currency,
@@ -192,7 +205,15 @@ const TransactionList = ({ transactions, onDelete, onEdit, exchangeRate = 0.92, 
                             <option value="Completed">Terminé</option>
                             <option value="Wishlist">Wishlist</option>
                             <option value="Abandoned">Abandonné</option>
-                            <option value="DLC">DLC</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Type</label>
+                        <select value={type} onChange={e => setType(e.target.value)}>
+                            <option value="All">Tous</option>
+                            {Object.entries(TYPE_LABELS).map(([val, label]) => (
+                                <option key={val} value={val}>{label}</option>
+                            ))}
                         </select>
                     </div>
                     <div>
@@ -255,7 +276,14 @@ const TransactionList = ({ transactions, onDelete, onEdit, exchangeRate = 0.92, 
                                                 </div>
                                             )}
                                             <div>
-                                                <div className="game-title-text">{t.title}</div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                    <span className="game-title-text">{t.title}</span>
+                                                    {(t.type && t.type !== 'game') && (
+                                                        <span className={`badge-type badge-type-${t.type}`}>
+                                                            {TYPE_LABELS[t.type] || t.type}
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 {t.genre && t.genre !== 'Other' && (
                                                     <div className="game-genre-tag">{t.genre}</div>
                                                 )}

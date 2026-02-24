@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Gamepad2, TrendingUp, TrendingDown, Minus, DollarSign, Tag, BarChart3, Clock } from 'lucide-react';
+import { Gamepad2, TrendingUp, TrendingDown, Minus, DollarSign, Tag, ShoppingCart } from 'lucide-react';
 import { toEUR } from '../utils/currency';
 
 const StatsOverview = ({ transactions, exchangeRate = 0.92 }) => {
@@ -7,9 +7,9 @@ const StatsOverview = ({ transactions, exchangeRate = 0.92 }) => {
     const totalGames = transactions.length;
     const totalSpent = transactions.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate), 0);
     const avgPrice = totalGames > 0 ? totalSpent / totalGames : 0;
-    const completedGames = transactions.filter(t => t.status === 'Completed').length;
-    const totalHours = transactions.reduce((acc, t) => acc + (parseFloat(t.hours_played) || 0), 0);
-    const avgCostPerHour = totalHours > 0 ? totalSpent / totalHours : 0;
+
+    const microTransactions = transactions.filter(t => t.type && t.type !== 'game');
+    const microTotal = microTransactions.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate), 0);
 
     // Calculate REAL trends: current month vs previous month
     const trends = useMemo(() => {
@@ -33,10 +33,8 @@ const StatsOverview = ({ transactions, exchangeRate = 0.92 }) => {
         const prevCount = prevMonthTx.length;
         const currentSpent = currentMonthTx.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate), 0);
         const prevSpent = prevMonthTx.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate), 0);
-        const currentCompleted = currentMonthTx.filter(t => t.status === 'Completed').length;
-        const prevCompleted = prevMonthTx.filter(t => t.status === 'Completed').length;
-        const currentHours = currentMonthTx.reduce((acc, t) => acc + (parseFloat(t.hours_played) || 0), 0);
-        const prevHours = prevMonthTx.reduce((acc, t) => acc + (parseFloat(t.hours_played) || 0), 0);
+        const currentMicro = currentMonthTx.filter(t => t.type && t.type !== 'game').reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate), 0);
+        const prevMicro = prevMonthTx.filter(t => t.type && t.type !== 'game').reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate), 0);
 
         const pct = (curr, prev) => {
             if (prev === 0 && curr === 0) return 0;
@@ -47,8 +45,7 @@ const StatsOverview = ({ transactions, exchangeRate = 0.92 }) => {
         return {
             games: pct(currentCount, prevCount),
             spent: pct(currentSpent, prevSpent),
-            completed: pct(currentCompleted, prevCompleted),
-            hours: pct(currentHours, prevHours),
+            micro: pct(currentMicro, prevMicro),
         };
     }, [transactions]);
 
@@ -68,10 +65,15 @@ const StatsOverview = ({ transactions, exchangeRate = 0.92 }) => {
         {
             label: 'Prix moyen',
             value: `${avgPrice.toFixed(2)} €`,
-            trend: null, // No trend for average
+            trend: null,
             icon: Tag,
         },
-
+        {
+            label: 'Micro-transactions',
+            value: `${microTotal.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`,
+            trend: trends.micro,
+            icon: ShoppingCart,
+        },
     ];
 
     return (

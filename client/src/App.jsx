@@ -78,6 +78,11 @@ function App() {
     return transactions.filter(t => new Date(t.purchase_date).getFullYear() === parseInt(yearFilter));
   }, [transactions, yearFilter]);
 
+  // Games list (for parent game autocomplete)
+  const gamesList = useMemo(() => {
+    return transactions.filter(t => t.type === 'game' || !t.type);
+  }, [transactions]);
+
   // Add or Update Transaction
   const handleSaveTransaction = async (transaction) => {
     try {
@@ -142,7 +147,15 @@ function App() {
     <div className="container">
       {/* Header */}
       <header className="app-header">
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <button
+            className="avatar-header-btn"
+            onClick={() => setShowSettings(true)}
+            title="Paramètres"
+            style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--card-border)', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--card-highlight)', cursor: 'pointer' }}
+          >
+            <span className="avatar-emoji" style={{ fontSize: '1.2rem' }}>{profile.avatar || '🎮'}</span>
+          </button>
           <h2 style={{ margin: 0, fontSize: '1.5rem', letterSpacing: '-0.5px', fontWeight: '500' }}>
             {profile.display_name || 'Solis'}
           </h2>
@@ -167,16 +180,6 @@ function App() {
           </button>
           <button className="btn-icon-only theme-toggle" title="Notifications">
             <Bell size={18} />
-          </button>
-
-          {/* User Avatar */}
-          <button
-            className="avatar-header-btn"
-            onClick={() => setShowSettings(true)}
-            title="Paramètres"
-            style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--card-border)', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--card-highlight)', cursor: 'pointer' }}
-          >
-            <span className="avatar-emoji" style={{ fontSize: '1.2rem' }}>{profile.avatar || '🎮'}</span>
           </button>
 
           {/* Budget Button — Premium only */}
@@ -271,6 +274,7 @@ function App() {
             <TransactionForm
               onAddTransaction={handleSaveTransaction}
               initialData={editingTransaction}
+              games={gamesList}
             />
           </div>
         </div>

@@ -7,7 +7,17 @@ const GENRES = [
     'Simulation', 'Horror', 'Puzzle', 'Platformer', 'Battle Royale', 'Other'
 ];
 
-const TransactionForm = ({ onAddTransaction, initialData = null }) => {
+const TRANSACTION_TYPES = [
+    { value: 'game', label: 'Jeu' },
+    { value: 'dlc', label: 'DLC' },
+    { value: 'skin', label: 'Skin' },
+    { value: 'battle_pass', label: 'Battle Pass' },
+    { value: 'currency', label: 'Monnaie in-game' },
+    { value: 'loot_box', label: 'Loot Box' },
+    { value: 'subscription', label: 'Abonnement' },
+];
+
+const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) => {
     const [formData, setFormData] = useState({
         title: '',
         platform: 'PC',
@@ -21,7 +31,11 @@ const TransactionForm = ({ onAddTransaction, initialData = null }) => {
         rating: null,
         hours_played: 0,
         cover_url: null,
+        type: 'game',
+        parent_game_id: null,
     });
+
+    const [parentSearch, setParentSearch] = useState('');
 
     const [coverResults, setCoverResults] = useState([]);
     const [searchingCover, setSearchingCover] = useState(false);
@@ -44,9 +58,15 @@ const TransactionForm = ({ onAddTransaction, initialData = null }) => {
                 rating: initialData.rating || null,
                 hours_played: initialData.hours_played || 0,
                 cover_url: initialData.cover_url || null,
+                type: initialData.type || 'game',
+                parent_game_id: initialData.parent_game_id || null,
             });
+            if (initialData.parent_game_id) {
+                const parentGame = games.find(g => g.id === initialData.parent_game_id);
+                if (parentGame) setParentSearch(parentGame.title);
+            }
         }
-    }, [initialData]);
+    }, [initialData, games]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -85,6 +105,10 @@ const TransactionForm = ({ onAddTransaction, initialData = null }) => {
         setFormData(prev => ({ ...prev, cover_url: url }));
     };
 
+    const filteredGames = parentSearch.length > 0
+        ? games.filter(g => g.title.toLowerCase().includes(parentSearch.toLowerCase())).slice(0, 8)
+        : games.slice(0, 8);
+
     const handleSubmit = (e) => {
         e.preventDefault();
         onAddTransaction({
@@ -92,6 +116,7 @@ const TransactionForm = ({ onAddTransaction, initialData = null }) => {
             price: parseFloat(formData.price) || 0,
             hours_played: parseFloat(formData.hours_played) || 0,
             rating: formData.rating ? parseInt(formData.rating) : null,
+            parent_game_id: formData.type === 'game' ? null : formData.parent_game_id,
         });
     };
 
@@ -138,6 +163,63 @@ const TransactionForm = ({ onAddTransaction, initialData = null }) => {
                     {searchingCover && <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>Recherche de jaquettes...</p>}
                 </div>
 
+                {/* Type d'achat */}
+                <div className="form-group">
+                    <label>Type d'achat</label>
+                    <select name="type" value={formData.type} onChange={handleChange}>
+                        {TRANSACTION_TYPES.map(t => (
+                            <option key={t.value} value={t.value}>{t.label}</option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Parent Game — only for non-game types */}
+                {formData.type !== 'game' && (
+                    <div className="form-group">
+                        <label>Jeu parent</label>
+                        <input
+                            type="text"
+                            placeholder="Rechercher un jeu..."
+                            value={parentSearch}
+                            onChange={e => {
+                                setParentSearch(e.target.value);
+                                if (!e.target.value) setFormData(prev => ({ ...prev, parent_game_id: null }));
+                            }}
+                        />
+                        {parentSearch.length > 0 && !formData.parent_game_id && filteredGames.length > 0 && (
+                            <div className="parent-game-results">
+                                {filteredGames.map(g => (
+                                    <button
+                                        key={g.id}
+                                        type="button"
+                                        className="parent-game-option"
+                                        onClick={() => {
+                                            setFormData(prev => ({ ...prev, parent_game_id: g.id }));
+                                            setParentSearch(g.title);
+                                        }}
+                                    >
+                                        {g.cover_url && <img src={g.cover_url} alt="" className="parent-game-cover" />}
+                                        <span>{g.title}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                        {formData.parent_game_id && (
+                            <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span className="badge badge-type-game" style={{ fontSize: '0.8rem' }}>
+                                    {parentSearch}
+                                </span>
+                                <button type="button" onClick={() => {
+                                    setFormData(prev => ({ ...prev, parent_game_id: null }));
+                                    setParentSearch('');
+                                }} style={{ background: 'none', border: 'none', color: 'var(--color-error)', cursor: 'pointer', fontSize: '0.8rem' }}>
+                                    Retirer
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* Date */}
                 <div className="form-group">
                     <label>Date d'Achat</label>
@@ -174,7 +256,6 @@ const TransactionForm = ({ onAddTransaction, initialData = null }) => {
                             <option value="Completed">Terminé</option>
                             <option value="Wishlist">Liste de souhaits</option>
                             <option value="Abandoned">Abandonné</option>
-                            <option value="DLC">DLC / Extension</option>
                         </select>
                     </div>
                 </div>
