@@ -1,0 +1,63 @@
+import React from 'react';
+import { Wallet, AlertTriangle } from 'lucide-react';
+
+const BudgetWidget = ({ budget, transactions, exchangeRate = 0.92 }) => {
+    if (!budget) return null;
+
+    const toEUR = (price, currency) => {
+        if (currency === 'EUR') return price;
+        if (currency === 'USD') return price * exchangeRate;
+        if (currency === 'GBP') return price * 1.17;
+        return price;
+    };
+
+    const now = new Date();
+    const currentMonthTx = transactions.filter(t => {
+        const d = new Date(t.purchase_date);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+
+    const spent = currentMonthTx.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency), 0);
+    const budgetAmount = parseFloat(budget.amount) || 0;
+    const pct = budgetAmount > 0 ? Math.min((spent / budgetAmount) * 100, 100) : 0;
+    const remaining = budgetAmount - spent;
+    const overBudget = spent > budgetAmount;
+
+    let barClass = '';
+    if (pct >= 100) barClass = 'danger';
+    else if (pct >= 80) barClass = 'warning';
+
+    const monthName = now.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
+
+    return (
+        <div className="budget-widget">
+            <div className="budget-info">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                    <Wallet size={18} style={{ color: 'var(--color-primary)' }} />
+                    <span style={{ fontWeight: 600, fontSize: '1rem' }}>Budget {monthName}</span>
+                </div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 700, color: overBudget ? 'var(--color-error)' : 'var(--color-text)' }}>
+                    {spent.toFixed(2)} € <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--color-text-dim)' }}>/ {budgetAmount.toFixed(2)} €</span>
+                </div>
+                {overBudget && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-error)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                        <AlertTriangle size={14} />
+                        Budget dépassé de {Math.abs(remaining).toFixed(2)} € !
+                    </div>
+                )}
+            </div>
+
+            <div className="budget-bar-container">
+                <div className="budget-bar-bg">
+                    <div className={`budget-bar-fill ${barClass}`} style={{ width: `${pct}%` }} />
+                </div>
+                <div className="budget-labels">
+                    <span>{pct.toFixed(0)}% utilisé</span>
+                    <span>{remaining > 0 ? `${remaining.toFixed(2)} € restants` : 'Budget épuisé'}</span>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default BudgetWidget;
