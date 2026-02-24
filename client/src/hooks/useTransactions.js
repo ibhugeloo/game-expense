@@ -6,7 +6,10 @@ export function useTransactions(userId) {
     const [loading, setLoading] = useState(true);
 
     const fetchTransactions = useCallback(async () => {
-        if (!userId) return;
+        if (!userId) {
+            setLoading(false);
+            return;
+        }
         try {
             const { data, error } = await supabase
                 .from('transactions')

@@ -16,6 +16,12 @@ const TransactionList = ({ transactions, onDelete, onEdit, exchangeRate = 0.92, 
     const [currentPage, setCurrentPage] = useState(1);
     const [sortConfig, setSortConfig] = useState({ key: 'purchase_date', direction: 'descending' });
 
+    // Extract unique filter values from transactions
+    const platforms = useMemo(() => ['All', ...new Set(transactions.map(t => t.platform).filter(Boolean))], [transactions]);
+    const genres = useMemo(() => ['All', ...new Set(transactions.map(t => t.genre).filter(Boolean))], [transactions]);
+    const stores = useMemo(() => ['All', ...new Set(transactions.map(t => t.store).filter(Boolean))], [transactions]);
+    const currencies = useMemo(() => ['All', ...new Set(transactions.map(t => t.currency).filter(Boolean))], [transactions]);
+
     // Filter
     const filtered = useMemo(() => {
         return transactions.filter(t => {
