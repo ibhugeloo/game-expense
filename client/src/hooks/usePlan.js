@@ -22,6 +22,7 @@ const PREMIUM_LIMITS = {
 export function usePlan(userId) {
     const [plan, setPlan] = useState('free');
     const [loading, setLoading] = useState(true);
+    const [checkoutLoading, setCheckoutLoading] = useState(false);
 
     const fetchPlan = async () => {
         if (!userId) return;
@@ -83,7 +84,24 @@ export function usePlan(userId) {
         }
     };
 
+    const createCheckoutSession = async (priceId) => {
+        setCheckoutLoading(true);
+        try {
+            const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+                body: { priceId },
+            });
+            if (error) throw error;
+            if (data?.url) {
+                window.location.href = data.url;
+            }
+        } catch (err) {
+            console.error('Checkout error:', err);
+            setCheckoutLoading(false);
+            throw err;
+        }
+    };
+
     const refreshPlan = () => fetchPlan();
 
-    return { plan, isPremium, limits, loading, canAddTransaction, upgradeToPremium, refreshPlan };
+    return { plan, isPremium, limits, loading, canAddTransaction, upgradeToPremium, createCheckoutSession, checkoutLoading, refreshPlan };
 }

@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Plus, X, Wallet, Crown, Search, Bell } from 'lucide-react';
+import { Plus, X, Wallet, Crown, Search, Bell, Settings, Calendar, ChevronDown, LayoutGrid, Heart } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from './supabaseClient';
 import { useAuth } from './hooks/useAuth';
 import { usePlan } from './hooks/usePlan';
 import { useProfile } from './hooks/useProfile';
 import { useTransactions } from './hooks/useTransactions';
 import { useBudget } from './hooks/useBudget';
-import AuthScreen from './components/AuthScreen';
+import LandingPage from './components/LandingPage';
+import OnboardingFlow from './components/OnboardingFlow';
 import UpgradeModal from './components/UpgradeModal';
 import SettingsModal from './components/SettingsModal';
 import TransactionForm from './components/TransactionForm';
@@ -15,12 +17,17 @@ import StatsOverview from './components/StatsOverview';
 import AnalyticsCharts from './components/AnalyticsCharts';
 import BudgetWidget from './components/BudgetWidget';
 import BudgetForm from './components/BudgetForm';
+import SearchOverlay from './components/SearchOverlay';
+import NotificationDropdown from './components/NotificationDropdown';
+import WishlistView from './components/WishlistView';
 import Toast from './components/Toast';
+import OfflineBanner from './components/OfflineBanner';
 
 function App() {
+  const { t } = useTranslation();
   const { user, loading: authLoading, signIn, signUp, signOut } = useAuth();
-  const { isPremium, limits, canAddTransaction, refreshPlan } = usePlan(user?.id);
-  const { profile, updateProfile } = useProfile(user?.id);
+  const { isPremium, limits, canAddTransaction, createCheckoutSession, checkoutLoading, refreshPlan } = usePlan(user?.id);
+  const { profile, loading: profileLoading, updateProfile, completeOnboarding } = useProfile(user?.id);
   const { transactions, loading, fetchTransactions, saveTransaction, deleteTransaction } = useTransactions(user?.id);
   const { budget, fetchBudget, saveBudget } = useBudget(user?.id);
 
@@ -33,9 +40,33 @@ function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
   const [exchangeRate, setExchangeRate] = useState(0.92);
   const [toast, setToast] = useState(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [activeView, setActiveView] = useState('all');
 
   const showToast = useCallback((message, type = 'error') => {
     setToast({ message, type });
+  }, []);
+
+  // Cmd+K shortcut for search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowSearch(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Handle Stripe return
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('session_id')) {
+      setTimeout(() => refreshPlan(), 1500);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
   }, []);
 
   // Apply theme
@@ -68,20 +99,39 @@ function App() {
 
   // Get available years
   const availableYears = useMemo(() => {
-    const years = [...new Set(transactions.map(t => new Date(t.purchase_date).getFullYear()))];
+    const years = [...new Set(transactions.map(tx => new Date(tx.purchase_date).getFullYear()))];
     return years.sort((a, b) => b - a);
   }, [transactions]);
 
   // Filter transactions by year
   const filteredByYear = useMemo(() => {
     if (yearFilter === 'All') return transactions;
-    return transactions.filter(t => new Date(t.purchase_date).getFullYear() === parseInt(yearFilter));
+    return transactions.filter(tx => new Date(tx.purchase_date).getFullYear() === parseInt(yearFilter));
   }, [transactions, yearFilter]);
 
   // Games list (for parent game autocomplete)
   const gamesList = useMemo(() => {
-    return transactions.filter(t => t.type === 'game' || !t.type);
+    return transactions.filter(tx => tx.type === 'game' || !tx.type);
   }, [transactions]);
+
+  // Wishlist transactions
+  const wishlistTransactions = useMemo(() => {
+    return transactions.filter(tx => tx.status === 'Wishlist');
+  }, [transactions]);
+
+  // Change transaction status
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      await supabase
+        .from('transactions')
+        .update({ status: newStatus })
+        .eq('id', id);
+      await fetchTransactions();
+    } catch (err) {
+      console.error(err);
+      showToast(t('errors.generic', { message: err.message }));
+    }
+  };
 
   // Add or Update Transaction
   const handleSaveTransaction = async (transaction) => {
@@ -91,7 +141,7 @@ function App() {
       setEditingTransaction(null);
     } catch (err) {
       console.error(err);
-      showToast('Erreur: ' + (err.message || 'Erreur inconnue'));
+      showToast(t('errors.generic', { message: err.message || t('errors.unknownError') }));
     }
   };
 
@@ -102,7 +152,7 @@ function App() {
       setShowBudgetModal(false);
     } catch (err) {
       console.error(err);
-      showToast('Erreur budget: ' + err.message);
+      showToast(t('errors.budgetError', { message: err.message }));
     }
   };
 
@@ -118,12 +168,12 @@ function App() {
 
   // Delete Transaction
   const handleDelete = async (id) => {
-    if (!window.confirm('Voulez-vous vraiment supprimer cet achat ?')) return;
+    if (!window.confirm(t('transactions.confirmDelete'))) return;
     try {
       await deleteTransaction(id);
     } catch (err) {
       console.error(err);
-      showToast('Erreur lors de la suppression');
+      showToast(t('transactions.deleteError'));
     }
   };
 
@@ -133,14 +183,31 @@ function App() {
       <div className="auth-container">
         <div className="loading-spinner">
           <div className="spinner"></div>
-          <p>Chargement...</p>
+          <p>{t('common.loading')}</p>
         </div>
       </div>
     );
   }
 
   if (!user) {
-    return <AuthScreen signIn={signIn} signUp={signUp} />;
+    return <LandingPage signIn={signIn} signUp={signUp} />;
+  }
+
+  // Wait for profile to load before deciding onboarding vs dashboard
+  if (profileLoading) {
+    return (
+      <div className="auth-container">
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+          <p>{t('common.loading')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show onboarding for new users
+  if (!profile.onboarding_completed) {
+    return <OnboardingFlow profile={profile} onComplete={completeOnboarding} />;
   }
 
   return (
@@ -151,7 +218,7 @@ function App() {
           <button
             className="avatar-header-btn"
             onClick={() => setShowSettings(true)}
-            title="Paramètres"
+            title={t('header.settings')}
             style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--card-border)', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--card-highlight)', cursor: 'pointer' }}
           >
             <span className="avatar-emoji" style={{ fontSize: '1.2rem' }}>{profile.avatar || '🎮'}</span>
@@ -159,27 +226,68 @@ function App() {
           <h2 style={{ margin: 0, fontSize: '1.5rem', letterSpacing: '-0.5px', fontWeight: '500' }}>
             {profile.display_name || 'Solis'}
           </h2>
+          <div className="view-tabs">
+            <button className={`view-tab ${activeView === 'all' ? 'active' : ''}`} onClick={() => setActiveView('all')}>
+              <LayoutGrid size={14} />
+              {t('header.viewAll')}
+            </button>
+            <button className={`view-tab ${activeView === 'wishlist' ? 'active' : ''}`} onClick={() => setActiveView('wishlist')}>
+              <Heart size={14} />
+              {t('header.viewWishlist')}
+              {wishlistTransactions.length > 0 && (
+                <span className="view-tab-count">{wishlistTransactions.length}</span>
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="header-controls">
-          {/* Year Filter */}
-          <select
-            className="year-filter-select"
-            value={yearFilter}
-            onChange={e => setYearFilter(e.target.value)}
-          >
-            <option value="All">Toutes les années</option>
-            {availableYears.map(y => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
+          {/* Year Filter — compact pill */}
+          <div className="year-pill-wrapper">
+            <Calendar size={14} className="year-pill-icon" />
+            <select
+              className="year-pill-select"
+              value={yearFilter}
+              onChange={e => setYearFilter(e.target.value)}
+            >
+              <option value="All">{t('header.allYears')}</option>
+              {availableYears.map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+            <ChevronDown size={12} className="year-pill-chevron" />
+          </div>
 
-          {/* Search & Bell Icons */}
-          <button className="btn-icon-only theme-toggle" title="Recherche">
+          {/* Icon buttons */}
+          <button className="btn-icon-only theme-toggle" onClick={() => setShowSearch(true)} title={t('common.search')}>
             <Search size={18} />
           </button>
-          <button className="btn-icon-only theme-toggle" title="Notifications">
-            <Bell size={18} />
+          <div style={{ position: 'relative' }}>
+            <button
+              className="btn-icon-only theme-toggle"
+              onClick={() => setShowNotifications(prev => !prev)}
+              title={t('header.notifications')}
+            >
+              <Bell size={18} />
+              {isPremium && budget && (() => {
+                const now = new Date();
+                const monthSpent = transactions
+                  .filter(tx => { const d = new Date(tx.purchase_date); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); })
+                  .reduce((sum, tx) => sum + (parseFloat(tx.price) || 0), 0);
+                return monthSpent / budget.amount >= 0.8 ? <span className="notif-dot" /> : null;
+              })()}
+            </button>
+            {showNotifications && (
+              <NotificationDropdown
+                transactions={transactions}
+                budget={budget}
+                exchangeRate={exchangeRate}
+                onClose={() => setShowNotifications(false)}
+              />
+            )}
+          </div>
+          <button className="btn-icon-only theme-toggle" onClick={() => setShowSettings(true)} title={t('header.settings')}>
+            <Settings size={18} />
           </button>
 
           {/* Budget Button — Premium only */}
@@ -187,10 +295,10 @@ function App() {
             <button
               className="btn btn-secondary"
               onClick={() => setShowBudgetModal(true)}
-              title="Définir le budget mensuel"
+              title={t('header.setBudget')}
             >
               <Wallet size={18} />
-              Budget
+              {t('header.budget')}
             </button>
           )}
 
@@ -205,7 +313,7 @@ function App() {
             }}
           >
             <Plus size={20} />
-            Ajouter
+            {t('header.addTransaction')}
           </button>
 
           {/* Upgrade button — Free only */}
@@ -213,7 +321,7 @@ function App() {
             <button
               className="btn"
               onClick={() => setShowUpgradeModal(true)}
-              title="Passer Premium"
+              title={t('header.upgradeToPremium')}
               style={{
                 background: 'linear-gradient(135deg, #f59e0b, #f97316)',
                 color: 'white',
@@ -222,51 +330,64 @@ function App() {
               }}
             >
               <Crown size={18} />
-              Premium
+              {t('header.premium')}
             </button>
           )}
         </div>
       </header>
 
-      {/* Stats Cards */}
-      <StatsOverview transactions={filteredByYear} exchangeRate={exchangeRate} />
+      {activeView === 'all' ? (
+        <>
+          {/* Stats Cards */}
+          <StatsOverview transactions={filteredByYear} exchangeRate={exchangeRate} />
 
-      {/* Budget Widget — Premium only */}
-      {isPremium && budget && (
-        <BudgetWidget
-          budget={budget}
-          transactions={filteredByYear}
+          {/* Budget Widget — Premium only */}
+          {isPremium && budget && (
+            <BudgetWidget
+              budget={budget}
+              transactions={filteredByYear}
+              exchangeRate={exchangeRate}
+            />
+          )}
+
+          {/* Charts Section */}
+          <AnalyticsCharts transactions={filteredByYear} exchangeRate={exchangeRate} isPremium={isPremium} />
+
+          {/* Main Content */}
+          <main>
+            {loading ? (
+              <div className="loading-spinner">
+                <div className="spinner"></div>
+                <p>{t('common.loading')}</p>
+              </div>
+            ) : (
+              <TransactionList
+                transactions={filteredByYear}
+                onDelete={handleDelete}
+                onEdit={openEditModal}
+                exchangeRate={exchangeRate}
+                isPremium={isPremium}
+              />
+            )}
+          </main>
+        </>
+      ) : (
+        <WishlistView
+          transactions={wishlistTransactions}
+          onEdit={openEditModal}
+          onDelete={handleDelete}
+          onStatusChange={handleStatusChange}
+          onAdd={openAddModal}
           exchangeRate={exchangeRate}
         />
       )}
-
-      {/* Charts Section */}
-      <AnalyticsCharts transactions={filteredByYear} exchangeRate={exchangeRate} isPremium={isPremium} />
-
-      {/* Main Content */}
-      <main>
-        {loading ? (
-          <div className="loading-spinner">
-            <div className="spinner"></div>
-            <p>Chargement...</p>
-          </div>
-        ) : (
-          <TransactionList
-            transactions={filteredByYear}
-            onDelete={handleDelete}
-            onEdit={openEditModal}
-            exchangeRate={exchangeRate}
-            isPremium={isPremium}
-          />
-        )}
-      </main>
 
       {/* Transaction Form Modal */}
       {showForm && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowForm(false) }}>
           <div className="glass-modal">
             <div className="modal-header">
-              <h2>{editingTransaction ? 'Modifier Transaction' : 'Nouvel Achat'}</h2>
+              <h2>{editingTransaction ? t('transactions.editTransaction') : t('transactions.newPurchase')}</h2>
               <button onClick={() => setShowForm(false)} className="btn-icon-only modal-close">
                 <X size={24} />
               </button>
@@ -285,7 +406,7 @@ function App() {
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowBudgetModal(false) }}>
           <div className="glass-modal" style={{ maxWidth: '400px' }}>
             <div className="modal-header">
-              <h2>Budget Mensuel</h2>
+              <h2>{t('budget.monthlyBudget')}</h2>
               <button onClick={() => setShowBudgetModal(false)} className="btn-icon-only modal-close">
                 <X size={24} />
               </button>
@@ -302,7 +423,8 @@ function App() {
       {showUpgradeModal && (
         <UpgradeModal
           onClose={() => setShowUpgradeModal(false)}
-          currentPlan="free"
+          onCheckout={createCheckoutSession}
+          checkoutLoading={checkoutLoading}
         />
       )}
 
@@ -326,9 +448,18 @@ function App() {
               setShowSettings(false);
             } catch (err) {
               console.error(err);
-              showToast('Erreur lors de l\'annulation');
+              showToast(t('settings.subscription.cancelError'));
             }
           }}
+        />
+      )}
+
+      {/* Search Overlay */}
+      {showSearch && (
+        <SearchOverlay
+          transactions={transactions}
+          onSelect={openEditModal}
+          onClose={() => setShowSearch(false)}
         />
       )}
 
@@ -340,6 +471,9 @@ function App() {
           onClose={() => setToast(null)}
         />
       )}
+
+      {/* Offline banner */}
+      <OfflineBanner />
     </div>
   );
 }

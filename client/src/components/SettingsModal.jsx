@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
 import { X, User, Crown, CreditCard, Palette, Shield, LogOut, AlertTriangle, Key, Eye, EyeOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
-
-const AVATAR_OPTIONS = [
-    '🎮', '🕹️', '👾', '🎯', '🏆', '⚔️', '🎲', '🧩',
-    '🐉', '🦊', '🐺', '🦁', '🐱', '🐶', '🦅', '🐙',
-    '🚀', '💎', '🔥', '⭐', '🌙', '🌊', '🌸', '🍀',
-    '😎', '🤖', '👻', '💀', '🎃', '🦇', '🧙', '🥷',
-];
+import { AVATAR_OPTIONS } from '../constants/avatars';
 
 const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCancelSubscription, onSignOut, userEmail }) => {
+    const { t, i18n } = useTranslation();
     const [activeTab, setActiveTab] = useState('profile');
     const [displayName, setDisplayName] = useState(profile.display_name || '');
     const [selectedAvatar, setSelectedAvatar] = useState(profile.avatar || '🎮');
@@ -39,7 +35,7 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
         } else {
-            setSaveError('Erreur lors de la sauvegarde. Vérifie la console pour les détails.');
+            setSaveError(t('settings.profile.saveError'));
         }
     };
 
@@ -48,11 +44,11 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
         setPasswordMessage({ type: '', text: '' });
 
         if (newPassword.length < 6) {
-            setPasswordMessage({ type: 'error', text: 'Le mot de passe doit contenir au moins 6 caractères.' });
+            setPasswordMessage({ type: 'error', text: t('settings.security.passwordMinLength') });
             return;
         }
         if (newPassword !== confirmPassword) {
-            setPasswordMessage({ type: 'error', text: 'Les mots de passe ne correspondent pas.' });
+            setPasswordMessage({ type: 'error', text: t('settings.security.passwordMismatch') });
             return;
         }
 
@@ -60,11 +56,11 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
         try {
             const { error } = await supabase.auth.updateUser({ password: newPassword });
             if (error) throw error;
-            setPasswordMessage({ type: 'success', text: 'Mot de passe modifié avec succès !' });
+            setPasswordMessage({ type: 'success', text: t('settings.security.passwordChanged') });
             setNewPassword('');
             setConfirmPassword('');
         } catch (err) {
-            setPasswordMessage({ type: 'error', text: err.message || 'Erreur lors du changement.' });
+            setPasswordMessage({ type: 'error', text: err.message || t('settings.security.passwordChangeError') });
         } finally {
             setPasswordSaving(false);
         }
@@ -78,17 +74,17 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
     };
 
     const tabs = [
-        { id: 'profile', label: 'Profil', icon: User },
-        { id: 'subscription', label: 'Abonnement', icon: CreditCard },
-        { id: 'preferences', label: 'Préférences', icon: Palette },
-        { id: 'security', label: 'Sécurité', icon: Shield },
+        { id: 'profile', label: t('settings.tabs.profile'), icon: User },
+        { id: 'subscription', label: t('settings.tabs.subscription'), icon: CreditCard },
+        { id: 'preferences', label: t('settings.tabs.preferences'), icon: Palette },
+        { id: 'security', label: t('settings.tabs.security'), icon: Shield },
     ];
 
     return (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
             <div className="glass-modal" style={{ maxWidth: '600px', minHeight: '400px' }}>
                 <div className="modal-header">
-                    <h2>Paramètres</h2>
+                    <h2>{t('settings.title')}</h2>
                     <button onClick={onClose} className="btn-icon-only modal-close">
                         <X size={24} />
                     </button>
@@ -112,7 +108,7 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
                     {/* Profile Tab */}
                     {activeTab === 'profile' && (
                         <div>
-                            <h3 className="settings-section-title">Avatar</h3>
+                            <h3 className="settings-section-title">{t('settings.profile.avatar')}</h3>
                             <div className="avatar-grid">
                                 {AVATAR_OPTIONS.map(emoji => (
                                     <button
@@ -125,12 +121,12 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
                                 ))}
                             </div>
 
-                            <h3 className="settings-section-title" style={{ marginTop: '1.5rem' }}>Nom d'affichage</h3>
+                            <h3 className="settings-section-title" style={{ marginTop: '1.5rem' }}>{t('settings.profile.displayName')}</h3>
                             <input
                                 type="text"
                                 value={displayName}
                                 onChange={e => setDisplayName(e.target.value)}
-                                placeholder="Ton pseudo..."
+                                placeholder={t('settings.profile.displayNamePlaceholder')}
                                 style={{ width: '100%' }}
                             />
 
@@ -144,7 +140,7 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
                                 disabled={saving}
                                 style={{ width: '100%', marginTop: '1rem' }}
                             >
-                                {saving ? 'Sauvegarde...' : saved ? '✅ Sauvegardé !' : 'Sauvegarder'}
+                                {saving ? t('common.saving') : saved ? `✅ ${t('common.saved')}` : t('common.save')}
                             </button>
                         </div>
                     )}
@@ -166,10 +162,10 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
                                     </div>
                                     <div>
                                         <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>
-                                            Plan {isPremium ? 'Premium' : 'Gratuit'}
+                                            {isPremium ? t('settings.subscription.planPremium') : t('settings.subscription.planFree')}
                                         </div>
                                         <div style={{ color: 'var(--color-text-dim)', fontSize: '0.85rem' }}>
-                                            {isPremium ? 'Toutes les fonctionnalités débloquées' : 'Limité à 50 transactions'}
+                                            {isPremium ? t('settings.subscription.premiumDescription') : t('settings.subscription.freeDescription')}
                                         </div>
                                     </div>
                                 </div>
@@ -188,17 +184,16 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
                                                 border: '1px solid var(--color-error)',
                                             }}
                                         >
-                                            Résilier l'abonnement
+                                            {t('settings.subscription.cancelSubscription')}
                                         </button>
                                     ) : (
                                         <div className="settings-cancel-confirm">
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
                                                 <AlertTriangle size={18} color="var(--color-error)" />
-                                                <strong style={{ color: 'var(--color-error)' }}>Confirmer la résiliation ?</strong>
+                                                <strong style={{ color: 'var(--color-error)' }}>{t('settings.subscription.confirmCancel')}</strong>
                                             </div>
                                             <p style={{ color: 'var(--color-text-dim)', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                                                Tu perdras l'accès aux fonctionnalités Premium (graphiques avancés, export CSV, budget, jaquettes).
-                                                Tes données seront conservées.
+                                                {t('settings.subscription.cancelWarning')}
                                             </p>
                                             <div style={{ display: 'flex', gap: '0.75rem' }}>
                                                 <button
@@ -206,14 +201,14 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
                                                     onClick={() => setShowCancelConfirm(false)}
                                                     style={{ flex: 1, background: 'var(--input-bg)', color: 'var(--color-text)' }}
                                                 >
-                                                    Annuler
+                                                    {t('settings.subscription.cancel')}
                                                 </button>
                                                 <button
                                                     className="btn"
                                                     onClick={handleCancelSubscription}
                                                     style={{ flex: 1, background: 'var(--color-error)', color: 'white' }}
                                                 >
-                                                    Résilier
+                                                    {t('settings.subscription.confirm')}
                                                 </button>
                                             </div>
                                         </div>
@@ -221,7 +216,7 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
                                 </div>
                             ) : (
                                 <p style={{ color: 'var(--color-text-dim)', fontSize: '0.85rem', marginTop: '1rem', textAlign: 'center' }}>
-                                    Passe Premium pour débloquer toutes les fonctionnalités !
+                                    {t('settings.subscription.upgradeCta')}
                                 </p>
                             )}
                         </div>
@@ -230,7 +225,17 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
                     {/* Preferences Tab */}
                     {activeTab === 'preferences' && (
                         <div>
-                            <h3 className="settings-section-title">Devise par défaut</h3>
+                            <h3 className="settings-section-title">{t('settings.preferences.language')}</h3>
+                            <select
+                                value={i18n.language}
+                                onChange={e => i18n.changeLanguage(e.target.value)}
+                                style={{ width: '100%' }}
+                            >
+                                <option value="fr">Français</option>
+                                <option value="en">English</option>
+                            </select>
+
+                            <h3 className="settings-section-title" style={{ marginTop: '1.5rem' }}>{t('settings.preferences.defaultCurrency')}</h3>
                             <select
                                 value={defaultCurrency}
                                 onChange={e => setDefaultCurrency(e.target.value)}
@@ -248,7 +253,7 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
                                 disabled={saving}
                                 style={{ width: '100%', marginTop: '1.5rem' }}
                             >
-                                {saving ? 'Sauvegarde...' : saved ? '✅ Sauvegardé !' : 'Sauvegarder'}
+                                {saving ? t('common.saving') : saved ? `✅ ${t('common.saved')}` : t('common.save')}
                             </button>
                         </div>
                     )}
@@ -256,27 +261,27 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
                     {/* Security Tab */}
                     {activeTab === 'security' && (
                         <div>
-                            <h3 className="settings-section-title">Compte</h3>
+                            <h3 className="settings-section-title">{t('settings.security.account')}</h3>
                             <div style={{
                                 background: 'var(--input-bg)',
                                 padding: '1rem',
                                 borderRadius: 'var(--radius-sm)',
                                 marginBottom: '1.5rem',
                             }}>
-                                <div style={{ color: 'var(--color-text-dim)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Email</div>
+                                <div style={{ color: 'var(--color-text-dim)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>{t('settings.security.email')}</div>
                                 <div style={{ fontWeight: 500 }}>{userEmail}</div>
                             </div>
 
-                            <h3 className="settings-section-title">Modifier le mot de passe</h3>
+                            <h3 className="settings-section-title">{t('settings.security.changePassword')}</h3>
                             <div className="form-group">
-                                <label>Nouveau mot de passe</label>
+                                <label>{t('settings.security.newPassword')}</label>
                                 <div style={{ position: 'relative' }}>
                                     <Key size={16} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-text-dim)' }} />
                                     <input
                                         type={showPassword ? 'text' : 'password'}
                                         value={newPassword}
                                         onChange={e => setNewPassword(e.target.value)}
-                                        placeholder="Min. 6 caractères"
+                                        placeholder={t('settings.security.newPasswordPlaceholder')}
                                         style={{ paddingLeft: '36px', paddingRight: '40px', width: '100%' }}
                                     />
                                     <button
@@ -294,14 +299,14 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
                             </div>
 
                             <div className="form-group">
-                                <label>Confirmer le mot de passe</label>
+                                <label>{t('settings.security.confirmPassword')}</label>
                                 <div style={{ position: 'relative' }}>
                                     <Key size={16} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-text-dim)' }} />
                                     <input
                                         type={showPassword ? 'text' : 'password'}
                                         value={confirmPassword}
                                         onChange={e => setConfirmPassword(e.target.value)}
-                                        placeholder="Confirmer..."
+                                        placeholder={t('settings.security.confirmPlaceholder')}
                                         style={{ paddingLeft: '36px', width: '100%' }}
                                     />
                                 </div>
@@ -319,7 +324,7 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
                                 disabled={passwordSaving || !newPassword}
                                 style={{ width: '100%', marginTop: '0.5rem', marginBottom: '1.5rem' }}
                             >
-                                {passwordSaving ? 'Modification...' : 'Changer le mot de passe'}
+                                {passwordSaving ? t('settings.security.passwordChanging') : t('settings.security.changePasswordButton')}
                             </button>
 
                             <div style={{ borderTop: '1px solid var(--card-border)', paddingTop: '1rem' }}>
@@ -334,7 +339,7 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
                                     }}
                                 >
                                     <LogOut size={18} />
-                                    Se déconnecter
+                                    {t('settings.security.signOut')}
                                 </button>
                             </div>
                         </div>

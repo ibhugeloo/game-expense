@@ -1,8 +1,11 @@
 import React, { useMemo } from 'react';
 import { Gamepad2, TrendingUp, TrendingDown, Minus, DollarSign, Tag, ShoppingCart } from 'lucide-react';
 import { toEUR } from '../utils/currency';
+import { useTranslation } from 'react-i18next';
+import { formatCurrency } from '../utils/formatters';
 
 const StatsOverview = ({ transactions, exchangeRate = 0.92 }) => {
+    const { t, i18n } = useTranslation();
 
     const totalGames = transactions.length;
     const totalSpent = transactions.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate), 0);
@@ -11,7 +14,6 @@ const StatsOverview = ({ transactions, exchangeRate = 0.92 }) => {
     const microTransactions = transactions.filter(t => t.type && t.type !== 'game');
     const microTotal = microTransactions.reduce((acc, t) => acc + toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate), 0);
 
-    // Calculate REAL trends: current month vs previous month
     const trends = useMemo(() => {
         const now = new Date();
         const currentMonth = now.getMonth();
@@ -51,26 +53,26 @@ const StatsOverview = ({ transactions, exchangeRate = 0.92 }) => {
 
     const cards = [
         {
-            label: 'Jeux achetés',
+            label: t('stats.gamesPurchased'),
             value: totalGames,
             trend: trends.games,
             icon: Gamepad2,
         },
         {
-            label: 'Dépense totale',
-            value: `${totalSpent.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`,
+            label: t('stats.totalSpent'),
+            value: `${formatCurrency(totalSpent, i18n.language)} €`,
             trend: trends.spent,
             icon: DollarSign,
         },
         {
-            label: 'Prix moyen',
+            label: t('stats.averagePrice'),
             value: `${avgPrice.toFixed(2)} €`,
             trend: null,
             icon: Tag,
         },
         {
-            label: 'Micro-transactions',
-            value: `${microTotal.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`,
+            label: t('stats.microTransactions'),
+            value: `${formatCurrency(microTotal, i18n.language)} €`,
             trend: trends.micro,
             icon: ShoppingCart,
         },
@@ -102,7 +104,7 @@ const StatsOverview = ({ transactions, exchangeRate = 0.92 }) => {
                                     {isNeutral && <Minus size={14} />}
                                     {isPositive ? '+' : ''}{card.trend}%
                                 </div>
-                                <span className="stat-card-trend-label">vs mois dernier</span>
+                                <span className="stat-card-trend-label">{t('stats.vsLastMonth')}</span>
                             </div>
                         )}
                     </div>

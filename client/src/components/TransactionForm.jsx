@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Image as ImageIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const GENRES = [
     'FPS', 'RPG', 'MOBA', 'Racing', 'Action-Adventure',
@@ -8,16 +9,25 @@ const GENRES = [
 ];
 
 const TRANSACTION_TYPES = [
-    { value: 'game', label: 'Jeu' },
-    { value: 'dlc', label: 'DLC' },
-    { value: 'skin', label: 'Skin' },
-    { value: 'battle_pass', label: 'Battle Pass' },
-    { value: 'currency', label: 'Monnaie in-game' },
-    { value: 'loot_box', label: 'Loot Box' },
-    { value: 'subscription', label: 'Abonnement' },
+    { value: 'game', labelKey: 'transactionTypes.game' },
+    { value: 'dlc', labelKey: 'transactionTypes.dlc' },
+    { value: 'skin', labelKey: 'transactionTypes.skin' },
+    { value: 'battle_pass', labelKey: 'transactionTypes.battle_pass' },
+    { value: 'currency', labelKey: 'transactionTypes.currency' },
+    { value: 'loot_box', labelKey: 'transactionTypes.loot_box' },
+    { value: 'subscription', labelKey: 'transactionTypes.subscription' },
+];
+
+const STATUS_OPTIONS = [
+    { value: 'Backlog', labelKey: 'statusLabels.Backlog' },
+    { value: 'Playing', labelKey: 'statusLabels.Playing' },
+    { value: 'Completed', labelKey: 'statusLabels.Completed' },
+    { value: 'Wishlist', labelKey: 'statusLabels.Wishlist' },
+    { value: 'Abandoned', labelKey: 'statusLabels.Abandoned' },
 ];
 
 const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) => {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState({
         title: '',
         platform: 'PC',
@@ -132,7 +142,7 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
             <form onSubmit={handleSubmit}>
                 {/* Title */}
                 <div className="form-group">
-                    <label>Titre du Jeu</label>
+                    <label>{t('form.gameTitle')}</label>
                     <div style={{ position: 'relative' }}>
                         <Search size={16} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-text-dim)' }} />
                         <input
@@ -140,7 +150,7 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
                             name="title"
                             value={formData.title}
                             onChange={handleChange}
-                            placeholder="Ex: Elden Ring"
+                            placeholder={t('form.gameTitlePlaceholder')}
                             style={{ paddingLeft: '36px' }}
                             required
                         />
@@ -160,15 +170,15 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
                             ))}
                         </div>
                     )}
-                    {searchingCover && <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>Recherche de jaquettes...</p>}
+                    {searchingCover && <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>{t('form.searchingCovers')}</p>}
                 </div>
 
                 {/* Type d'achat */}
                 <div className="form-group">
-                    <label>Type d'achat</label>
+                    <label>{t('form.purchaseType')}</label>
                     <select name="type" value={formData.type} onChange={handleChange}>
-                        {TRANSACTION_TYPES.map(t => (
-                            <option key={t.value} value={t.value}>{t.label}</option>
+                        {TRANSACTION_TYPES.map(tx => (
+                            <option key={tx.value} value={tx.value}>{t(tx.labelKey)}</option>
                         ))}
                     </select>
                 </div>
@@ -176,10 +186,10 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
                 {/* Parent Game — only for non-game types */}
                 {formData.type !== 'game' && (
                     <div className="form-group">
-                        <label>Jeu parent</label>
+                        <label>{t('form.parentGame')}</label>
                         <input
                             type="text"
-                            placeholder="Rechercher un jeu..."
+                            placeholder={t('form.searchGame')}
                             value={parentSearch}
                             onChange={e => {
                                 setParentSearch(e.target.value);
@@ -213,7 +223,7 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
                                     setFormData(prev => ({ ...prev, parent_game_id: null }));
                                     setParentSearch('');
                                 }} style={{ background: 'none', border: 'none', color: 'var(--color-error)', cursor: 'pointer', fontSize: '0.8rem' }}>
-                                    Retirer
+                                    {t('form.remove')}
                                 </button>
                             </div>
                         )}
@@ -222,7 +232,7 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
 
                 {/* Date */}
                 <div className="form-group">
-                    <label>Date d'Achat</label>
+                    <label>{t('form.purchaseDate')}</label>
                     <input
                         type="date"
                         name="purchase_date"
@@ -235,7 +245,7 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
                 {/* Platform + Status */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div className="form-group">
-                        <label>Plateforme</label>
+                        <label>{t('form.platform')}</label>
                         <select name="platform" value={formData.platform} onChange={handleChange}>
                             <option value="PC">PC</option>
                             <option value="Steam">Steam</option>
@@ -249,13 +259,11 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
                     </div>
 
                     <div className="form-group">
-                        <label>Statut</label>
+                        <label>{t('form.status')}</label>
                         <select name="status" value={formData.status} onChange={handleChange}>
-                            <option value="Backlog">Backlog</option>
-                            <option value="Playing">En Cours</option>
-                            <option value="Completed">Terminé</option>
-                            <option value="Wishlist">Liste de souhaits</option>
-                            <option value="Abandoned">Abandonné</option>
+                            {STATUS_OPTIONS.map(s => (
+                                <option key={s.value} value={s.value}>{t(s.labelKey)}</option>
+                            ))}
                         </select>
                     </div>
                 </div>
@@ -263,14 +271,14 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
                 {/* Genre + Rating */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div className="form-group">
-                        <label>Genre</label>
+                        <label>{t('form.genre')}</label>
                         <select name="genre" value={formData.genre} onChange={handleChange}>
                             {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
                         </select>
                     </div>
 
                     <div className="form-group">
-                        <label>Note ({formData.rating || '—'}/10)</label>
+                        <label>{t('form.ratingLabel', { value: formData.rating || '—' })}</label>
                         <div className="rating-input">
                             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
                                 <button
@@ -289,7 +297,7 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
                 {/* Price + Currency + Hours */}
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.5fr', gap: '1rem' }}>
                     <div className="form-group">
-                        <label>Prix</label>
+                        <label>{t('form.price')}</label>
                         <input
                             type="number"
                             name="price"
@@ -301,7 +309,7 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
                         />
                     </div>
                     <div className="form-group">
-                        <label>Devise</label>
+                        <label>{t('form.currency')}</label>
                         <select name="currency" value={formData.currency} onChange={handleChange}>
                             <option value="EUR">EUR</option>
                             <option value="USD">USD</option>
@@ -310,7 +318,7 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
                         </select>
                     </div>
                     <div className="form-group">
-                        <label>Heures jouées</label>
+                        <label>{t('form.hoursPlayed')}</label>
                         <input
                             type="number"
                             name="hours_played"
@@ -325,24 +333,24 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
 
                 {/* Store */}
                 <div className="form-group">
-                    <label>Lieu d'Achat</label>
+                    <label>{t('form.store')}</label>
                     <input
                         type="text"
                         name="store"
                         value={formData.store}
                         onChange={handleChange}
-                        placeholder="Ex: Steam, Amazon, Instant Gaming"
+                        placeholder={t('form.storePlaceholder')}
                     />
                 </div>
 
                 {/* Notes */}
                 <div className="form-group">
-                    <label>Notes</label>
+                    <label>{t('form.notes')}</label>
                     <textarea
                         name="notes"
                         value={formData.notes}
                         onChange={handleChange}
-                        placeholder="Commentaires..."
+                        placeholder={t('form.notesPlaceholder')}
                         rows="2"
                     ></textarea>
                 </div>
@@ -353,13 +361,13 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
                         <img src={formData.cover_url} alt="Cover" style={{ width: 60, height: 80, borderRadius: 8, objectFit: 'cover' }} />
                         <button type="button" onClick={() => setFormData(prev => ({ ...prev, cover_url: null }))}
                             style={{ background: 'none', border: 'none', color: 'var(--color-error)', cursor: 'pointer', fontSize: '0.85rem' }}>
-                            Retirer la jaquette
+                            {t('form.removeCover')}
                         </button>
                     </div>
                 )}
 
                 <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-                    {initialData ? 'Sauvegarder les modifications' : 'Ajouter Transaction'}
+                    {initialData ? t('form.saveChanges') : t('form.addTransaction')}
                 </button>
             </form>
         </div>

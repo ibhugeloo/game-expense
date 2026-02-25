@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
 export function useProfile(userId) {
-    const [profile, setProfile] = useState({ display_name: '', avatar: '🎮', default_currency: 'EUR' });
+    const [profile, setProfile] = useState({ display_name: '', avatar: '🎮', default_currency: 'EUR', onboarding_completed: false });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -17,6 +17,10 @@ export function useProfile(userId) {
                     .maybeSingle();
 
                 if (data) {
+                    // Backwards compat: if column doesn't exist yet, infer from display_name
+                    if (data.onboarding_completed === null || data.onboarding_completed === undefined) {
+                        data.onboarding_completed = !!data.display_name;
+                    }
                     setProfile(data);
                 }
                 // If no profile exists, we'll create it on first save via upsert
@@ -56,5 +60,12 @@ export function useProfile(userId) {
         }
     };
 
-    return { profile, loading, updateProfile };
+    const completeOnboarding = async (profileData) => {
+        return updateProfile({
+            ...profileData,
+            onboarding_completed: true,
+        });
+    };
+
+    return { profile, loading, updateProfile, completeOnboarding };
 }

@@ -5,10 +5,14 @@ import {
 } from 'recharts';
 import { PieChartIcon, TrendingUp, MoreHorizontal, Trophy, Gamepad2, Tag } from 'lucide-react';
 import { toEUR } from '../utils/currency';
+import { useTranslation } from 'react-i18next';
+import { formatCurrency, formatMonthShort, getLocale } from '../utils/formatters';
 
 const COLORS = ['#4ade80', '#22c55e', '#facc15', '#f59e0b', '#86efac', '#eab308', '#16a34a', '#d97706', '#15803d', '#b45309'];
 
 const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false }) => {
+    const { t, i18n } = useTranslation();
+    const locale = getLocale(i18n.language);
 
     // 1. Platform donut
     const platformData = useMemo(() => {
@@ -24,16 +28,17 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
     const totalPlatformSpent = platformData.reduce((a, p) => a + p.value, 0);
 
     // 2. Store donut
+    const unknownLabel = t('common.unknown');
     const storeData = useMemo(() => {
-        return transactions.reduce((acc, t) => {
-            const storeName = t.store || 'Inconnu';
+        return transactions.reduce((acc, tx) => {
+            const storeName = tx.store || unknownLabel;
             const existing = acc.find(s => s.name === storeName);
-            const price = toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate);
+            const price = toEUR(parseFloat(tx.price) || 0, tx.currency, exchangeRate);
             if (existing) existing.value += price;
             else acc.push({ name: storeName, value: price });
             return acc;
         }, []).sort((a, b) => b.value - a.value);
-    }, [transactions, exchangeRate]);
+    }, [transactions, exchangeRate, unknownLabel]);
 
     const topStore = storeData[0] || { name: 'N/A', value: 0 };
 
@@ -41,14 +46,14 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
     const monthlyData = useMemo(() => {
         return transactions.reduce((acc, t) => {
             const date = new Date(t.purchase_date);
-            const monthYear = date.toLocaleString('fr-FR', { month: 'short', year: '2-digit' });
+            const monthYear = formatMonthShort(date, i18n.language);
             const existing = acc.find(m => m.name === monthYear);
             const price = toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate);
             if (existing) existing.value += price;
             else acc.push({ name: monthYear, value: price, dateObj: date });
             return acc;
         }, []).map(i => ({ ...i, value: Math.round(i.value) })).sort((a, b) => a.dateObj - b.dateObj);
-    }, [transactions, exchangeRate]);
+    }, [transactions, exchangeRate, i18n.language]);
 
     // 4. Cumulative spending
     const cumulativeData = useMemo(() => {
@@ -61,15 +66,15 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
 
     // 5. Top games
     const gameData = useMemo(() => {
-        return transactions.reduce((acc, t) => {
-            const title = t.title || 'Inconnu';
+        return transactions.reduce((acc, tx) => {
+            const title = tx.title || unknownLabel;
             const existing = acc.find(g => g.name === title);
-            const price = toEUR(parseFloat(t.price) || 0, t.currency, exchangeRate);
+            const price = toEUR(parseFloat(tx.price) || 0, tx.currency, exchangeRate);
             if (existing) existing.value += price;
             else acc.push({ name: title, value: price });
             return acc;
         }, []).map(i => ({ ...i, value: Math.round(i.value) })).sort((a, b) => b.value - a.value).slice(0, 10);
-    }, [transactions, exchangeRate]);
+    }, [transactions, exchangeRate, unknownLabel]);
 
     // 6. Genre donut
     const genreData = useMemo(() => {
@@ -101,7 +106,7 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
                     <p style={{ color: 'var(--color-text)', fontSize: '0.9rem', marginBottom: '8px', fontWeight: '600' }}>{label}</p>
                     <p style={{ color: 'var(--color-text)', fontSize: '1.05rem', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                         <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: payload[0].fill || payload[0].stroke || '#f59e0b' }}></span>
-                        {payload[0].value.toLocaleString('fr-FR')} €
+                        {payload[0].value.toLocaleString(locale)} €
                     </p>
                 </div>
             );
@@ -118,7 +123,7 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
                 {/* Platform Distribution */}
                 <div className="chart-card">
                     <div className="chart-card-header">
-                        <span className="chart-card-title"><PieChartIcon size={18} /> Dépenses par Plateforme</span>
+                        <span className="chart-card-title"><PieChartIcon size={18} /> {t('charts.spendingByPlatform')}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                         <div style={{ width: '140px', height: '140px', position: 'relative' }}>
@@ -131,7 +136,7 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
                             </ResponsiveContainer>
                             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
                                 <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text)' }}>{transactions.length}</div>
-                                <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>Total</div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>{t('charts.total')}</div>
                             </div>
                         </div>
                         <div className="chart-legend" style={{ flex: 1 }}>
@@ -150,7 +155,7 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
                     {/* Store sub-section */}
                     <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--card-border)' }}>
                         <div className="chart-card-header" style={{ marginBottom: '1rem' }}>
-                            <span className="chart-card-title"><PieChartIcon size={18} /> Dépenses par Lieu</span>
+                            <span className="chart-card-title"><PieChartIcon size={18} /> {t('charts.spendingByStore')}</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                             <div style={{ width: '140px', height: '140px', position: 'relative' }}>
@@ -163,7 +168,7 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
                                 </ResponsiveContainer>
                                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
                                     <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text)' }}>{storeData.length}</div>
-                                    <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>Lieux</div>
+                                    <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>{t('charts.stores')}</div>
                                 </div>
                             </div>
                             <div className="chart-legend" style={{ flex: 1 }}>
@@ -184,15 +189,15 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
                 {/* Monthly Evolution + Highlights */}
                 <div className="chart-card">
                     <div className="chart-card-header">
-                        <span className="chart-card-title"><TrendingUp size={18} /> Évolution Mensuelle</span>
+                        <span className="chart-card-title"><TrendingUp size={18} /> {t('charts.monthlyEvolution')}</span>
                     </div>
 
-                    <div className="chart-big-stat">{totalPlatformSpent.toLocaleString('fr-FR')} €</div>
-                    <div className="chart-big-stat-label">Dépense totale</div>
+                    <div className="chart-big-stat">{totalPlatformSpent.toLocaleString(locale)} €</div>
+                    <div className="chart-big-stat-label">{t('charts.totalSpending')}</div>
 
                     <div className="highlight-box">
-                        <div className="highlight-box-title"><Trophy size={14} /> Boutique Préférée</div>
-                        <div className="highlight-box-text">{topStore.name} — {Math.round(topStore.value)} € de dépenses</div>
+                        <div className="highlight-box-title"><Trophy size={14} /> {t('charts.favoriteStore')}</div>
+                        <div className="highlight-box-text">{t('charts.storeSpending', { name: topStore.name, amount: Math.round(topStore.value) })}</div>
                     </div>
 
                     <div style={{ height: '180px', marginTop: '1.5rem' }}>
@@ -222,8 +227,8 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
                     <div className="chart-card">
                         <div className="chart-card-header">
                             <div>
-                                <span className="chart-card-title"><Tag size={18} /> Dépenses par Genre</span>
-                                <div className="chart-card-subtitle">{genreData.length} genres différents</div>
+                                <span className="chart-card-title"><Tag size={18} /> {t('charts.spendingByGenre')}</span>
+                                <div className="chart-card-subtitle">{t('charts.differentGenres', { count: genreData.length })}</div>
                             </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
@@ -237,7 +242,7 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
                                 </ResponsiveContainer>
                                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
                                     <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--color-text)' }}>{genreData.length}</div>
-                                    <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)' }}>Genres</div>
+                                    <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)' }}>{t('charts.genres')}</div>
                                 </div>
                             </div>
                             <div className="chart-legend" style={{ flex: 1 }}>
@@ -258,8 +263,8 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
                     <div className="chart-card">
                         <div className="chart-card-header">
                             <div>
-                                <span className="chart-card-title"><TrendingUp size={18} /> Dépenses Cumulées</span>
-                                <div className="chart-card-subtitle">Progression totale dans le temps</div>
+                                <span className="chart-card-title"><TrendingUp size={18} /> {t('charts.cumulativeSpending')}</span>
+                                <div className="chart-card-subtitle">{t('charts.cumulativeSubtitle')}</div>
                             </div>
                         </div>
                         <div style={{ height: '220px', marginTop: '1rem' }}>
@@ -288,8 +293,8 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
                 <div className="chart-card" style={{ marginBottom: '2rem' }}>
                     <div className="chart-card-header">
                         <div>
-                            <span className="chart-card-title"><Gamepad2 size={18} /> Dépenses par Jeu</span>
-                            <div className="chart-card-subtitle">Top 10 par dépenses totales</div>
+                            <span className="chart-card-title"><Gamepad2 size={18} /> {t('charts.spendingByGame')}</span>
+                            <div className="chart-card-subtitle">{t('charts.topGamesBySpending')}</div>
                         </div>
                     </div>
                     <div style={{ height: '400px', marginTop: '1rem' }}>
