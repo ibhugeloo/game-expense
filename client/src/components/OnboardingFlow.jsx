@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Gamepad2, ArrowRight, ArrowLeft, Check, BarChart3, Wallet, Target, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AVATAR_OPTIONS } from '../constants/avatars';
+import { trackEvent } from '../posthog';
 
 const TOTAL_STEPS = 4;
 
@@ -28,6 +29,7 @@ const OnboardingFlow = ({ profile, onComplete }) => {
             display_name: displayName,
             default_currency: currency,
         });
+        trackEvent('onboarding_completed', { avatar, currency, step: 'finish' });
         setSaving(false);
     };
 
@@ -38,6 +40,7 @@ const OnboardingFlow = ({ profile, onComplete }) => {
             display_name: displayName,
             default_currency: currency,
         });
+        trackEvent('onboarding_completed', { avatar, currency, step: `skip_step_${step}` });
         setSaving(false);
     };
 

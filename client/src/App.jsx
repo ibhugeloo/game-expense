@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Plus, X, Wallet, Crown, Search, Bell, Settings, Calendar, ChevronDown, LayoutGrid, Heart } from 'lucide-react';
+import { Plus, X, Wallet, Crown, Search, Bell, Settings, Calendar, ChevronDown, LayoutGrid, Heart, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from './supabaseClient';
 import { useAuth } from './hooks/useAuth';
@@ -22,10 +22,13 @@ import NotificationDropdown from './components/NotificationDropdown';
 import WishlistView from './components/WishlistView';
 import Toast from './components/Toast';
 import OfflineBanner from './components/OfflineBanner';
+import { exportTransactionsCsv } from './utils/exportCsv';
+import { SkeletonStats, SkeletonChart, SkeletonTable } from './components/SkeletonLoader';
+import { identifyUser, resetUser, trackEvent } from './posthog';
 
 function App() {
   const { t } = useTranslation();
-  const { user, loading: authLoading, signIn, signUp, signOut } = useAuth();
+  const { user, loading: authLoading, signIn, signUp, signOut, resetPassword } = useAuth();
   const { isPremium, limits, canAddTransaction, createCheckoutSession, checkoutLoading, refreshPlan } = usePlan(user?.id);
   const { profile, loading: profileLoading, updateProfile, completeOnboarding } = useProfile(user?.id);
   const { transactions, loading, fetchTransactions, saveTransaction, deleteTransaction } = useTransactions(user?.id);
@@ -91,6 +94,15 @@ function App() {
     fetchRate();
   }, []);
 
+  // PostHog: identify user on login, reset on logout
+  useEffect(() => {
+    if (user) {
+      identifyUser(user.id, { email: user.email });
+    } else {
+      resetUser();
+    }
+  }, [user]);
+
   // Fetch data on user change
   useEffect(() => {
     fetchTransactions();
@@ -137,6 +149,11 @@ function App() {
   const handleSaveTransaction = async (transaction) => {
     try {
       await saveTransaction(transaction, editingTransaction?.id);
+      trackEvent(editingTransaction ? 'transaction_edited' : 'transaction_added', {
+        type: transaction.type || 'game',
+        currency: transaction.currency,
+        platform: transaction.platform,
+      });
       setShowForm(false);
       setEditingTransaction(null);
     } catch (err) {
@@ -149,6 +166,7 @@ function App() {
   const handleSaveBudget = async (amount) => {
     try {
       await saveBudget(amount);
+      trackEvent('budget_set', { amount });
       setShowBudgetModal(false);
     } catch (err) {
       console.error(err);
@@ -171,6 +189,7 @@ function App() {
     if (!window.confirm(t('transactions.confirmDelete'))) return;
     try {
       await deleteTransaction(id);
+      trackEvent('transaction_deleted');
     } catch (err) {
       console.error(err);
       showToast(t('transactions.deleteError'));
@@ -190,7 +209,7 @@ function App() {
   }
 
   if (!user) {
-    return <LandingPage signIn={signIn} signUp={signUp} />;
+    return <LandingPage signIn={signIn} signUp={signUp} resetPassword={resetPassword} />;
   }
 
   // Wait for profile to load before deciding onboarding vs dashboard
@@ -302,6 +321,17 @@ function App() {
             </button>
           )}
 
+          {/* Export CSV — Premium only */}
+          {isPremium && (
+            <button
+              className="btn-icon-only theme-toggle"
+              onClick={() => { exportTransactionsCsv(filteredByYear); trackEvent('csv_exported', { count: filteredByYear.length }); }}
+              title={t('header.exportCsv')}
+            >
+              <Download size={18} />
+            </button>
+          )}
+
           <button
             className="btn btn-primary"
             onClick={() => {
@@ -320,7 +350,7 @@ function App() {
           {!isPremium && (
             <button
               className="btn"
-              onClick={() => setShowUpgradeModal(true)}
+              onClick={() => { setShowUpgradeModal(true); trackEvent('upgrade_clicked'); }}
               title={t('header.upgradeToPremium')}
               style={{
                 background: 'linear-gradient(135deg, #f59e0b, #f97316)',
@@ -337,30 +367,31 @@ function App() {
       </header>
 
       {activeView === 'all' ? (
-        <>
-          {/* Stats Cards */}
-          <StatsOverview transactions={filteredByYear} exchangeRate={exchangeRate} />
+        loading ? (
+          <>
+            <SkeletonStats />
+            <SkeletonChart />
+            <SkeletonTable />
+          </>
+        ) : (
+          <>
+            {/* Stats Cards */}
+            <StatsOverview transactions={filteredByYear} exchangeRate={exchangeRate} />
 
-          {/* Budget Widget — Premium only */}
-          {isPremium && budget && (
-            <BudgetWidget
-              budget={budget}
-              transactions={filteredByYear}
-              exchangeRate={exchangeRate}
-            />
-          )}
+            {/* Budget Widget — Premium only */}
+            {isPremium && budget && (
+              <BudgetWidget
+                budget={budget}
+                transactions={filteredByYear}
+                exchangeRate={exchangeRate}
+              />
+            )}
 
-          {/* Charts Section */}
-          <AnalyticsCharts transactions={filteredByYear} exchangeRate={exchangeRate} isPremium={isPremium} />
+            {/* Charts Section */}
+            <AnalyticsCharts transactions={filteredByYear} exchangeRate={exchangeRate} isPremium={isPremium} />
 
-          {/* Main Content */}
-          <main>
-            {loading ? (
-              <div className="loading-spinner">
-                <div className="spinner"></div>
-                <p>{t('common.loading')}</p>
-              </div>
-            ) : (
+            {/* Main Content */}
+            <main>
               <TransactionList
                 transactions={filteredByYear}
                 onDelete={handleDelete}
@@ -368,9 +399,9 @@ function App() {
                 exchangeRate={exchangeRate}
                 isPremium={isPremium}
               />
-            )}
-          </main>
-        </>
+            </main>
+          </>
+        )
       ) : (
         <WishlistView
           transactions={wishlistTransactions}

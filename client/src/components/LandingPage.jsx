@@ -12,7 +12,7 @@ const PRICING_FEATURES = [
     { key: 'covers', freeKey: null, premiumKey: 'pricingFeatureCovers' },
 ];
 
-const LandingPage = ({ signIn, signUp }) => {
+const LandingPage = ({ signIn, signUp, resetPassword }) => {
     const { t, i18n } = useTranslation();
     const authRef = useRef(null);
 
@@ -150,7 +150,7 @@ const LandingPage = ({ signIn, signUp }) => {
                             {t('auth.subtitle')}
                         </p>
                     </div>
-                    <AuthForm signIn={signIn} signUp={signUp} />
+                    <AuthForm signIn={signIn} signUp={signUp} resetPassword={resetPassword} />
                 </div>
             </section>
 

@@ -26,7 +26,13 @@
     "signupButton": "Sign Up",
     "checkEmail": "Check your email to confirm your account!",
     "genericError": "An error occurred",
-    "subtitle": "Game Expense Tracker"
+    "subtitle": "Game Expense Tracker",
+    "forgotPassword": "Forgot password?",
+    "resetTitle": "Reset your password",
+    "resetDesc": "Enter your email and we'll send you a reset link.",
+    "resetButton": "Send reset link",
+    "resetEmailSent": "Email sent! Check your inbox (and spam folder).",
+    "backToLogin": "Back"
   },
   "header": {
     "settings": "Settings",
@@ -38,7 +44,8 @@
     "addTransaction": "Add",
     "setBudget": "Set monthly budget",
     "viewAll": "All",
-    "viewWishlist": "Wishlist"
+    "viewWishlist": "Wishlist",
+    "exportCsv": "Export as CSV"
   },
   "stats": {
     "gamesPurchased": "Games purchased",

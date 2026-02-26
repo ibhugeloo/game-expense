@@ -10,6 +10,7 @@
 ### 🔐 Authentification & Onboarding
 - [x] Landing page (hero, features, pricing, auth, footer)
 - [x] Login / Signup avec Supabase Auth (email + mot de passe)
+- [x] Mot de passe oublié (reset password via email Supabase)
 - [x] Onboarding 4 étapes (avatar, nom + devise, tour features, confirmation)
 - [x] Toggle langue FR / EN sur la landing page
 - [x] AuthForm extrait et réutilisable (LandingPage + Onboarding)
@@ -20,12 +21,14 @@
 - [x] Graphiques analytics (répartition par plateforme, genre, boutique)
 - [x] Liste des transactions (tableau triable avec edit/delete)
 - [x] Budget widget avec barre de progression mensuelle (Premium)
+- [x] Skeleton loaders (shimmer animation pendant le chargement)
 
 ### 💰 Gestion des transactions
 - [x] Ajout / édition via modale (jeu, DLC, micro-transaction, abonnement)
 - [x] Champs : nom, prix, devise, plateforme, genre, boutique, date, statut, jeu parent
 - [x] Multi-devises (EUR, USD, GBP, JPY) avec taux de change temps réel
 - [x] Statuts : Backlog, Playing, Completed, Dropped, Wishlist
+- [x] Export CSV (Premium) — téléchargement direct avec BOM UTF-8
 
 ### 💜 Vue Wishlist
 - [x] Onglet All / Wishlist dans le header
@@ -51,6 +54,7 @@
 ### 🛡️ Robustesse & UX
 - [x] ErrorBoundary (catch erreurs JS, page de fallback avec reload)
 - [x] Bannière offline (détection perte réseau, alerte fixée en bas)
+- [x] Skeleton loaders (stats, charts, table avec shimmer)
 - [x] Meta tags SEO + Open Graph + Twitter Card
 - [x] Favicon SVG custom (manette verte Mosaic)
 - [x] Responsive mobile vérifié (landing + dashboard + view-tabs)
@@ -78,6 +82,9 @@
 - [ ] Sitemap.xml (optionnel)
 
 ### UX & Contenu
+- [x] Mot de passe oublié / reset password
+- [x] Export CSV (Premium)
+- [x] Skeleton loaders (loading states visuels)
 - [ ] Personnaliser les email templates Supabase (confirmation, reset password)
 - [ ] Page RGPD / mentions légales (si utilisateurs EU)
 - [x] ErrorBoundary + bannière offline
@@ -91,7 +98,7 @@
 
 ### Monitoring
 - [ ] Error tracking (Sentry ou équivalent)
-- [ ] Analytics (Plausible, PostHog, ou GA4)
+- [x] Analytics PostHog (identify, trackEvent, onboarding, transactions, budget, export, upgrade)
 - [ ] Monitoring uptime Supabase
 
 ---
@@ -105,3 +112,7 @@
 | 2026-02-25 | Responsive mobile : view-tabs full-width sur mobile, landing vérifié |
 | 2026-02-25 | ErrorBoundary + OfflineBanner + CSS erreur/offline |
 | 2026-02-25 | Migration SQL onboarding_completed exécutée par l'utilisateur |
+| 2026-02-25 | Reset password : flow complet (lien oublié → email → retour) |
+| 2026-02-25 | Export CSV : utilitaire + bouton Premium (Download icon) + BOM UTF-8 |
+| 2026-02-25 | Skeleton loaders : SkeletonStats, SkeletonChart, SkeletonTable + shimmer CSS |
+| 2026-02-26 | PostHog analytics : posthog.js, initPostHog, identifyUser, trackEvent sur onboarding/transactions/budget/export/upgrade |

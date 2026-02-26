@@ -1297,6 +1297,41 @@ textarea:focus {
   font-size: 1rem;
 }
 
+.auth-forgot-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+  margin: -0.25rem 0 0.5rem;
+  transition: color var(--transition-fast);
+  font-family: inherit;
+}
+
+.auth-forgot-btn:hover {
+  color: var(--color-primary);
+}
+
+.auth-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 0.5rem;
+  transition: color var(--transition-fast);
+  font-family: inherit;
+}
+
+.auth-back-btn:hover {
+  color: var(--color-text);
+}
+
 .auth-error {
   background: var(--color-error-dim);
   color: var(--color-error);
@@ -2729,4 +2764,35 @@ textarea:focus {
 @keyframes offlineSlideUp {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   SKELETON LOADERS
+   ═══════════════════════════════════════════════════════ */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--card-border) 25%,
+    var(--hover-bg) 50%,
+    var(--card-border) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+.skeleton-text {
+  height: 14px;
+  border-radius: 4px;
+}
+
+.skeleton-card {
+  min-height: 100px;
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
