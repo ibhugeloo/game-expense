@@ -163,7 +163,7 @@
   },
   "upgrade": {
     "title": "Passer Premium",
-    "subtitle": "Débloquez toutes les fonctionnalités de Mosaic Analytics",
+    "subtitle": "Débloquez toutes les fonctionnalités de LootLog Analytics",
     "monthly": "/mois",
     "yearly": "/an",
     "ctaButton": "Passer Premium",
@@ -227,7 +227,15 @@
       "passwordChanging": "Modification...",
       "changePasswordButton": "Changer le mot de passe",
       "passwordChangeError": "Erreur lors du changement.",
-      "signOut": "Se déconnecter"
+      "signOut": "Se déconnecter",
+      "dangerZone": "Zone de danger",
+      "deleteAccount": "Supprimer mon compte",
+      "deleteConfirmTitle": "Supprimer définitivement le compte ?",
+      "deleteWarning": "Cette action est irréversible. Toutes tes données (transactions, budget, profil) seront supprimées définitivement. Tape SUPPRIMER pour confirmer.",
+      "deleteConfirmPlaceholder": "Tape SUPPRIMER",
+      "deleteConfirmButton": "Supprimer définitivement",
+      "deleting": "Suppression...",
+      "deleteError": "Erreur lors de la suppression du compte."
     }
   },
   "search": {
@@ -284,16 +292,16 @@
     "pricingFeatureBudget": "Suivi de budget",
     "pricingFeatureExport": "Export CSV",
     "pricingFeatureCovers": "Jaquettes RAWG",
-    "footerText": "Mosaic Analytics — Suivez vos dépenses gaming"
+    "footerText": "LootLog Analytics — Suivez vos dépenses gaming"
   },
   "onboarding": {
-    "step1Title": "Bienvenue sur Mosaic !",
+    "step1Title": "Bienvenue sur LootLog !",
     "step1Desc": "Configurons ton profil en quelques étapes rapides.",
     "chooseAvatar": "Choisis ton avatar",
     "step2Title": "À propos de toi",
     "step2Desc": "Dis-nous ton nom et ta devise préférée.",
     "step3Title": "Ce que tu peux faire",
-    "step3Desc": "Voici ce que Mosaic te permet de faire :",
+    "step3Desc": "Voici ce que LootLog te permet de faire :",
     "tour1": "Suivre chaque achat de jeu avec des stats détaillées",
     "tour2": "Définir des budgets et surveiller tes dépenses mensuelles",
     "tour3": "Gérer ton backlog, wishlist et bibliothèque",

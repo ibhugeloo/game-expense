@@ -27,7 +27,11 @@ export function useAuth() {
     };
 
     const signUp = async (email, password) => {
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: { emailRedirectTo: window.location.origin },
+        });
         if (error) throw error;
         return data;
     };
@@ -37,6 +41,19 @@ export function useAuth() {
         if (error) throw error;
     };
 
+    const deleteAccount = async () => {
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (!currentUser) throw new Error('Not authenticated');
+        const uid = currentUser.id;
+
+        await supabase.from('transactions').delete().eq('user_id', uid);
+        await supabase.from('budgets').delete().eq('user_id', uid);
+        await supabase.from('subscriptions').delete().eq('user_id', uid);
+        await supabase.from('profiles').delete().eq('id', uid);
+        await supabase.rpc('delete_user');
+        await supabase.auth.signOut();
+    };
+
     const resetPassword = async (email) => {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}`,
@@ -44,5 +61,5 @@ export function useAuth() {
         if (error) throw error;
     };
 
-    return { user, loading, signIn, signUp, signOut, resetPassword };
+    return { user, loading, signIn, signUp, signOut, resetPassword, deleteAccount };
 }

@@ -17,14 +17,14 @@ const LoginPage = ({ signIn, signUp, resetPassword }) => {
                     onClick={() => navigate('/')}
                 >
                     <ArrowLeft size={16} />
-                    {t('landing.back') || 'Retour'}
+                    Retour
                 </button>
                 <div className="auth-card glass-panel">
                     <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                         <div className="auth-logo">
                             <Gamepad2 size={32} color="white" />
                         </div>
-                        <h1 style={{ fontSize: '1.8rem', marginBottom: '0.25rem', letterSpacing: '-0.5px' }}>Mosaic</h1>
+                        <h1 style={{ fontSize: '1.8rem', marginBottom: '0.25rem', letterSpacing: '-0.5px' }}>LootLog</h1>
                         <p style={{ color: 'var(--color-text-dim)', fontSize: '0.95rem' }}>
                             {t('auth.subtitle')}
                         </p>

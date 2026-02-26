@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { X, User, Crown, CreditCard, Palette, Shield, LogOut, AlertTriangle, Key, Eye, EyeOff } from 'lucide-react';
+import { X, User, Crown, CreditCard, Palette, Shield, LogOut, AlertTriangle, Key, Eye, EyeOff, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
 import { AVATAR_OPTIONS } from '../constants/avatars';
 
-const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCancelSubscription, onSignOut, userEmail }) => {
+const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCancelSubscription, onSignOut, onDeleteAccount, userEmail }) => {
     const { t, i18n } = useTranslation();
     const [activeTab, setActiveTab] = useState('profile');
     const [displayName, setDisplayName] = useState(profile.display_name || '');
@@ -14,6 +14,10 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
     const [saved, setSaved] = useState(false);
     const [saveError, setSaveError] = useState('');
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState('');
+    const [deleting, setDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState('');
 
     // Password change state
     const [newPassword, setNewPassword] = useState('');
@@ -63,6 +67,17 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
             setPasswordMessage({ type: 'error', text: err.message || t('settings.security.passwordChangeError') });
         } finally {
             setPasswordSaving(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        setDeleting(true);
+        setDeleteError('');
+        try {
+            await onDeleteAccount();
+        } catch (err) {
+            setDeleteError(err.message || t('settings.security.deleteError'));
+            setDeleting(false);
         }
     };
 
@@ -341,6 +356,66 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
                                     <LogOut size={18} />
                                     {t('settings.security.signOut')}
                                 </button>
+                            </div>
+
+                            <div style={{ borderTop: '1px solid var(--card-border)', paddingTop: '1rem', marginTop: '0.5rem' }}>
+                                <h3 className="settings-section-title" style={{ color: 'var(--color-error)' }}>
+                                    {t('settings.security.dangerZone')}
+                                </h3>
+                                {!showDeleteConfirm ? (
+                                    <button
+                                        className="btn"
+                                        onClick={() => setShowDeleteConfirm(true)}
+                                        style={{
+                                            width: '100%',
+                                            background: 'var(--color-error-dim)',
+                                            color: 'var(--color-error)',
+                                            border: '1px solid var(--color-error)',
+                                            gap: '0.5rem',
+                                        }}
+                                    >
+                                        <Trash2 size={16} />
+                                        {t('settings.security.deleteAccount')}
+                                    </button>
+                                ) : (
+                                    <div className="settings-cancel-confirm">
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                                            <AlertTriangle size={18} color="var(--color-error)" />
+                                            <strong style={{ color: 'var(--color-error)' }}>{t('settings.security.deleteConfirmTitle')}</strong>
+                                        </div>
+                                        <p style={{ color: 'var(--color-text-dim)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                                            {t('settings.security.deleteWarning')}
+                                        </p>
+                                        <input
+                                            type="text"
+                                            value={deleteConfirmText}
+                                            onChange={e => setDeleteConfirmText(e.target.value)}
+                                            placeholder={t('settings.security.deleteConfirmPlaceholder')}
+                                            style={{ width: '100%', marginBottom: '0.75rem' }}
+                                        />
+                                        {deleteError && (
+                                            <div className="auth-error" style={{ marginBottom: '0.75rem' }}>{deleteError}</div>
+                                        )}
+                                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                            <button
+                                                className="btn"
+                                                onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); setDeleteError(''); }}
+                                                style={{ flex: 1, background: 'var(--input-bg)', color: 'var(--color-text)' }}
+                                                disabled={deleting}
+                                            >
+                                                {t('settings.subscription.cancel')}
+                                            </button>
+                                            <button
+                                                className="btn"
+                                                onClick={handleDeleteAccount}
+                                                disabled={deleteConfirmText !== 'SUPPRIMER' || deleting}
+                                                style={{ flex: 1, background: 'var(--color-error)', color: 'white', opacity: deleteConfirmText !== 'SUPPRIMER' ? 0.5 : 1 }}
+                                            >
+                                                {deleting ? t('settings.security.deleting') : t('settings.security.deleteConfirmButton')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

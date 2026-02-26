@@ -146,13 +146,11 @@ const OnboardingFlow = ({ profile, onComplete }) => {
 
                 {/* Navigation */}
                 <div className="onboarding-nav">
-                    {step > 1 ? (
+                    {step > 1 && (
                         <button className="btn btn-secondary" onClick={handleBack}>
                             <ArrowLeft size={16} />
                             {t('onboarding.back')}
                         </button>
-                    ) : (
-                        <div />
                     )}
 
                     {step < TOTAL_STEPS ? (

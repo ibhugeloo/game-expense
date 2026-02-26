@@ -29,14 +29,14 @@ const LandingPage = () => {
                         <div className="landing-logo">
                             <Gamepad2 size={20} color="white" />
                         </div>
-                        <span className="landing-nav-title">Mosaic</span>
+                        <span className="landing-nav-title">LootLog</span>
                     </div>
                     <div className="landing-nav-links">
                         <button
                             className="landing-lang-btn"
                             onClick={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}
                         >
-                            {i18n.language === 'fr' ? '🇬🇧' : '🇫🇷'}
+                            {i18n.language === 'fr' ? 'EN' : 'FR'}
                         </button>
                         <button className="btn btn-primary" onClick={goToLogin}>
                             {t('landing.cta')}

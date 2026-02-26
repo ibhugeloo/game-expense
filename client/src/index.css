@@ -2183,11 +2183,12 @@ textarea:focus {
   color: var(--color-text);
   padding: 0.4rem 0.75rem;
   border-radius: var(--radius-sm);
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 900;
   cursor: pointer;
   transition: all var(--transition-fast);
   font-family: inherit;
+  letter-spacing: 0.05em;
 }
 
 .landing-lang-btn:hover {
@@ -2669,7 +2670,7 @@ textarea:focus {
 /* ── Navigation ── */
 .onboarding-nav {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   gap: 1rem;
 }
@@ -2681,12 +2682,13 @@ textarea:focus {
 /* ── Skip ── */
 .onboarding-skip {
   background: none;
-  border: none;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
   color: var(--color-text-muted);
   font-size: 0.85rem;
   cursor: pointer;
-  padding: 0.75rem;
-  transition: color var(--transition-fast);
+  padding: 0.5rem 1rem;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
   font-family: inherit;
   margin-top: 0.5rem;
   align-self: center;
@@ -2694,6 +2696,7 @@ textarea:focus {
 
 .onboarding-skip:hover {
   color: var(--color-text);
+  border-color: var(--color-text-dim);
 }
 
 /* ── Onboarding responsive ── */

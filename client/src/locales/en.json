@@ -163,7 +163,7 @@
   },
   "upgrade": {
     "title": "Upgrade to Premium",
-    "subtitle": "Unlock all features of Mosaic Analytics",
+    "subtitle": "Unlock all features of LootLog Analytics",
     "monthly": "/month",
     "yearly": "/year",
     "ctaButton": "Upgrade to Premium",
@@ -227,7 +227,15 @@
       "passwordChanging": "Changing...",
       "changePasswordButton": "Change password",
       "passwordChangeError": "Error changing password.",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "dangerZone": "Danger zone",
+      "deleteAccount": "Delete my account",
+      "deleteConfirmTitle": "Permanently delete account?",
+      "deleteWarning": "This action is irreversible. All your data (transactions, budget, profile) will be permanently deleted. Type DELETE to confirm.",
+      "deleteConfirmPlaceholder": "Type DELETE",
+      "deleteConfirmButton": "Permanently delete",
+      "deleting": "Deleting...",
+      "deleteError": "Error deleting account."
     }
   },
   "search": {
@@ -284,16 +292,16 @@
     "pricingFeatureBudget": "Budget tracking",
     "pricingFeatureExport": "CSV Export",
     "pricingFeatureCovers": "RAWG covers",
-    "footerText": "Mosaic Analytics — Track your gaming expenses"
+    "footerText": "LootLog Analytics — Track your gaming expenses"
   },
   "onboarding": {
-    "step1Title": "Welcome to Mosaic!",
+    "step1Title": "Welcome to LootLog!",
     "step1Desc": "Let's set up your profile in a few quick steps.",
     "chooseAvatar": "Choose your avatar",
     "step2Title": "About You",
     "step2Desc": "Tell us your name and preferred currency.",
     "step3Title": "What You Can Do",
-    "step3Desc": "Here's what Mosaic helps you with:",
+    "step3Desc": "Here's what LootLog helps you with:",
     "tour1": "Track every game purchase with detailed analytics",
     "tour2": "Set budgets and monitor your monthly spending",
     "tour3": "Manage your backlog, wishlist, and library",

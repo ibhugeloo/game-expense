@@ -30,7 +30,7 @@ import { identifyUser, resetUser, trackEvent } from './posthog';
 
 function App() {
   const { t } = useTranslation();
-  const { user, loading: authLoading, signIn, signUp, signOut, resetPassword } = useAuth();
+  const { user, loading: authLoading, signIn, signUp, signOut, resetPassword, deleteAccount } = useAuth();
   const { isPremium, limits, canAddTransaction, createCheckoutSession, checkoutLoading, refreshPlan } = usePlan(user?.id);
   const { profile, loading: profileLoading, updateProfile, completeOnboarding } = useProfile(user?.id);
   const { transactions, loading, fetchTransactions, saveTransaction, deleteTransaction } = useTransactions(user?.id);
@@ -476,6 +476,7 @@ function App() {
           plan={isPremium ? 'premium' : 'free'}
           userEmail={user?.email}
           onSignOut={signOut}
+          onDeleteAccount={deleteAccount}
           onCancelSubscription={async () => {
             try {
               await supabase
