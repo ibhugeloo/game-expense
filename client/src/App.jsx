@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Plus, X, Wallet, Crown, Search, Bell, Settings, Calendar, ChevronDown, LayoutGrid, Heart, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { useAuth } from './hooks/useAuth';
 import { usePlan } from './hooks/usePlan';
@@ -8,6 +9,7 @@ import { useProfile } from './hooks/useProfile';
 import { useTransactions } from './hooks/useTransactions';
 import { useBudget } from './hooks/useBudget';
 import LandingPage from './components/LandingPage';
+import LoginPage from './components/LoginPage';
 import OnboardingFlow from './components/OnboardingFlow';
 import UpgradeModal from './components/UpgradeModal';
 import SettingsModal from './components/SettingsModal';
@@ -209,7 +211,12 @@ function App() {
   }
 
   if (!user) {
-    return <LandingPage signIn={signIn} signUp={signUp} resetPassword={resetPassword} />;
+    return (
+      <Routes>
+        <Route path="/login" element={<LoginPage signIn={signIn} signUp={signUp} resetPassword={resetPassword} />} />
+        <Route path="*" element={<LandingPage />} />
+      </Routes>
+    );
   }
 
   // Wait for profile to load before deciding onboarding vs dashboard

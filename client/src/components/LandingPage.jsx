@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import { Gamepad2, ArrowRight, BarChart3, Wallet, Target, Globe, Crown, Check, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import AuthForm from './AuthForm';
+import { useNavigate } from 'react-router-dom';
 
 const PRICING_FEATURES = [
     { key: 'transactions', freeKey: 'pricingFeature50', premiumKey: 'pricingFeatureUnlimited' },
@@ -12,22 +12,11 @@ const PRICING_FEATURES = [
     { key: 'covers', freeKey: null, premiumKey: 'pricingFeatureCovers' },
 ];
 
-const LandingPage = ({ signIn, signUp, resetPassword }) => {
+const LandingPage = () => {
     const { t, i18n } = useTranslation();
-    const authRef = useRef(null);
-    const [showAuth, setShowAuth] = useState(() => localStorage.getItem('hasVisited') === 'true');
+    const navigate = useNavigate();
 
-    const scrollToAuth = () => {
-        if (!showAuth) {
-            setShowAuth(true);
-            localStorage.setItem('hasVisited', 'true');
-            setTimeout(() => {
-                authRef.current?.scrollIntoView({ behavior: 'smooth' });
-            }, 50);
-        } else {
-            authRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }
-    };
+    const goToLogin = () => navigate('/login');
 
     return (
         <div className="landing-page">
@@ -47,9 +36,9 @@ const LandingPage = ({ signIn, signUp, resetPassword }) => {
                             className="landing-lang-btn"
                             onClick={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}
                         >
-                            {i18n.language === 'fr' ? '🇬🇧 EN' : '🇫🇷 FR'}
+                            {i18n.language === 'fr' ? '🇬🇧' : '🇫🇷'}
                         </button>
-                        <button className="btn btn-primary" onClick={scrollToAuth}>
+                        <button className="btn btn-primary" onClick={goToLogin}>
                             {t('landing.cta')}
                         </button>
                     </div>
@@ -68,7 +57,7 @@ const LandingPage = ({ signIn, signUp, resetPassword }) => {
                 <p className="landing-hero-tagline">
                     {t('landing.heroTagline')}
                 </p>
-                <button className="btn btn-primary landing-hero-cta" onClick={scrollToAuth}>
+                <button className="btn btn-primary landing-hero-cta" onClick={goToLogin}>
                     {t('landing.heroCta')}
                     <ArrowRight size={18} />
                 </button>
@@ -112,7 +101,7 @@ const LandingPage = ({ signIn, signUp, resetPassword }) => {
                                 </li>
                             ))}
                         </ul>
-                        <button className="btn btn-secondary landing-pricing-btn" onClick={scrollToAuth}>
+                        <button className="btn btn-secondary landing-pricing-btn" onClick={goToLogin}>
                             {t('landing.heroCta')}
                         </button>
                     </div>
@@ -140,30 +129,12 @@ const LandingPage = ({ signIn, signUp, resetPassword }) => {
                                 </li>
                             ))}
                         </ul>
-                        <button className="btn btn-primary landing-pricing-btn" onClick={scrollToAuth}>
+                        <button className="btn btn-primary landing-pricing-btn" onClick={goToLogin}>
                             {t('landing.cta')}
                         </button>
                     </div>
                 </div>
             </section>
-
-            {/* ── AUTH ── */}
-            {showAuth && (
-                <section className="landing-auth" ref={authRef}>
-                    <div className="auth-card glass-panel">
-                        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                            <div className="auth-logo">
-                                <Gamepad2 size={32} color="white" />
-                            </div>
-                            <h1 style={{ fontSize: '1.8rem', marginBottom: '0.25rem', letterSpacing: '-0.5px' }}>Mosaic</h1>
-                            <p style={{ color: 'var(--color-text-dim)', fontSize: '0.95rem' }}>
-                                {t('auth.subtitle')}
-                            </p>
-                        </div>
-                        <AuthForm signIn={signIn} signUp={signUp} resetPassword={resetPassword} />
-                    </div>
-                </section>
-            )}
 
             {/* ── FOOTER ── */}
             <footer className="landing-footer">
