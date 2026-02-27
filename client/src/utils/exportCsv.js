@@ -21,7 +21,7 @@ export function exportTransactionsCsv(transactions, filename = 'mosaic-export.cs
     ];
 
     const rows = transactions.map(tx => [
-        escapeCsv(tx.name || ''),
+        escapeCsv(tx.title || ''),
         escapeCsv(tx.type || 'game'),
         tx.price || 0,
         tx.currency || 'EUR',

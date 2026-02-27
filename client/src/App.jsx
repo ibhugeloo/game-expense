@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Plus, X, Wallet, Crown, Search, Bell, Settings, Calendar, ChevronDown, LayoutGrid, Heart, Download } from 'lucide-react';
+import { Plus, X, Wallet, Crown, Search, Bell, Settings, Calendar, ChevronDown, LayoutGrid, Heart, Download, Upload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
@@ -23,6 +23,7 @@ import SearchOverlay from './components/SearchOverlay';
 import NotificationDropdown from './components/NotificationDropdown';
 import WishlistView from './components/WishlistView';
 import Toast from './components/Toast';
+import ImportModal from './components/ImportModal';
 import OfflineBanner from './components/OfflineBanner';
 import { exportTransactionsCsv } from './utils/exportCsv';
 import { SkeletonStats, SkeletonChart, SkeletonTable } from './components/SkeletonLoader';
@@ -46,6 +47,7 @@ function App() {
   const [exchangeRate, setExchangeRate] = useState(0.92);
   const [toast, setToast] = useState(null);
   const [showSearch, setShowSearch] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [activeView, setActiveView] = useState('all');
 
@@ -339,6 +341,15 @@ function App() {
             </button>
           )}
 
+          {/* Import */}
+          <button
+            className="btn-icon-only theme-toggle"
+            onClick={() => setShowImport(true)}
+            title={t('header.import')}
+          >
+            <Upload size={18} />
+          </button>
+
           <button
             className="btn btn-primary"
             onClick={() => {
@@ -490,6 +501,14 @@ function App() {
               showToast(t('settings.subscription.cancelError'));
             }
           }}
+        />
+      )}
+
+      {/* Import Modal */}
+      {showImport && (
+        <ImportModal
+          onClose={() => { setShowImport(false); fetchTransactions(); }}
+          userId={user.id}
         />
       )}
 
