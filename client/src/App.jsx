@@ -43,7 +43,7 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [yearFilter, setYearFilter] = useState('All');
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const [exchangeRate, setExchangeRate] = useState(0.92);
   const [toast, setToast] = useState(null);
   const [showSearch, setShowSearch] = useState(false);
@@ -371,10 +371,10 @@ function App() {
               onClick={() => { setShowUpgradeModal(true); trackEvent('upgrade_clicked'); }}
               title={t('header.upgradeToPremium')}
               style={{
-                background: 'linear-gradient(135deg, #f59e0b, #f97316)',
+                background: 'var(--color-premium-gradient)',
                 color: 'white',
                 gap: '0.4rem',
-                boxShadow: '0 2px 12px rgba(245,158,11,0.3)',
+                boxShadow: '0 2px 12px rgba(212,168,83,0.3)',
               }}
             >
               <Crown size={18} />

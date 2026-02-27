@@ -35,11 +35,11 @@ const UpgradeModal = ({ onClose, onCheckout, checkoutLoading }) => {
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <div style={{
                         width: 56, height: 56,
-                        background: 'linear-gradient(135deg, #f59e0b, #f97316)',
+                        background: 'var(--color-premium-gradient)',
                         borderRadius: 14,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         margin: '0 auto 1rem',
-                        boxShadow: '0 8px 24px rgba(245, 158, 11, 0.3)',
+                        boxShadow: '0 8px 24px rgba(212, 168, 83, 0.3)',
                     }}>
                         <Crown size={28} color="white" />
                     </div>
@@ -89,7 +89,7 @@ const UpgradeModal = ({ onClose, onCheckout, checkoutLoading }) => {
                     >
                         <div style={{
                             position: 'absolute', top: -10, right: 10,
-                            background: 'linear-gradient(135deg, #10b981, #059669)',
+                            background: 'var(--color-premium-gradient)',
                             color: 'white', fontSize: '0.65rem', fontWeight: 700,
                             padding: '2px 8px', borderRadius: 20,
                         }}>
@@ -142,8 +142,8 @@ const UpgradeModal = ({ onClose, onCheckout, checkoutLoading }) => {
                         width: '100%',
                         padding: '0.85rem',
                         fontSize: '1rem',
-                        background: 'linear-gradient(135deg, #f59e0b, #f97316)',
-                        boxShadow: '0 4px 16px rgba(245, 158, 11, 0.3)',
+                        background: 'var(--color-premium-gradient)',
+                        boxShadow: '0 4px 16px rgba(212, 168, 83, 0.3)',
                         opacity: checkoutLoading ? 0.7 : 1,
                     }}
                     onClick={handleCheckout}

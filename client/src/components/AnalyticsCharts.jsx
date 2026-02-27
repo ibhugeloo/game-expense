@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, AreaChart, Area, LineChart, Line
@@ -8,11 +8,31 @@ import { toEUR } from '../utils/currency';
 import { useTranslation } from 'react-i18next';
 import { formatCurrency, formatMonthShort, getLocale } from '../utils/formatters';
 
-const COLORS = ['#4ade80', '#22c55e', '#facc15', '#f59e0b', '#86efac', '#eab308', '#16a34a', '#d97706', '#15803d', '#b45309'];
+const FALLBACK_COLORS = ['#D4A853', '#4A8FD4', '#3DAA6D', '#B07CD8', '#5BE5C1', '#D94F4F', '#8E95AD', '#c49a45', '#3d7ab8', '#2d8a57'];
+
+function readChartColors() {
+    const style = getComputedStyle(document.documentElement);
+    return Array.from({ length: 10 }, (_, i) => {
+        const v = style.getPropertyValue(`--color-chart-${i + 1}`).trim();
+        return v || FALLBACK_COLORS[i];
+    });
+}
+
+function useChartColors() {
+    const [colors, setColors] = useState(FALLBACK_COLORS);
+    useEffect(() => {
+        setColors(readChartColors());
+        const observer = new MutationObserver(() => setColors(readChartColors()));
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        return () => observer.disconnect();
+    }, []);
+    return colors;
+}
 
 const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false }) => {
     const { t, i18n } = useTranslation();
     const locale = getLocale(i18n.language);
+    const COLORS = useChartColors();
 
     // 1. Platform donut
     const platformData = useMemo(() => {
@@ -105,7 +125,7 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
                 }}>
                     <p style={{ color: 'var(--color-text)', fontSize: '0.9rem', marginBottom: '8px', fontWeight: '600' }}>{label}</p>
                     <p style={{ color: 'var(--color-text)', fontSize: '1.05rem', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                        <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: payload[0].fill || payload[0].stroke || '#f59e0b' }}></span>
+                        <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: payload[0].fill || payload[0].stroke || 'var(--color-accent)' }}></span>
                         {payload[0].value.toLocaleString(locale)} €
                     </p>
                 </div>
@@ -205,15 +225,15 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
                             <AreaChart data={monthlyData}>
                                 <defs>
                                     <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#4ade80" stopOpacity={0.6} />
-                                        <stop offset="95%" stopColor="#4ade80" stopOpacity={0.05} />
+                                        <stop offset="5%" stopColor={COLORS[0]} stopOpacity={0.6} />
+                                        <stop offset="95%" stopColor={COLORS[0]} stopOpacity={0.05} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
-                                <XAxis dataKey="name" stroke="#52525b" fontSize={11} tickLine={false} axisLine={false} dy={10} />
-                                <YAxis stroke="#52525b" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${v}€`} />
+                                <XAxis dataKey="name" stroke="var(--color-text-muted)" fontSize={11} tickLine={false} axisLine={false} dy={10} />
+                                <YAxis stroke="var(--color-text-muted)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${v}€`} />
                                 <Tooltip content={<CustomTooltip />} />
-                                <Area type="monotone" dataKey="value" stroke="#4ade80" strokeWidth={3} fillOpacity={1} fill="url(#areaGrad)" />
+                                <Area type="monotone" dataKey="value" stroke={COLORS[0]} strokeWidth={3} fillOpacity={1} fill="url(#areaGrad)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
@@ -272,15 +292,15 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
                                 <AreaChart data={cumulativeData}>
                                     <defs>
                                         <linearGradient id="cumulGrad" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#facc15" stopOpacity={0.6} />
-                                            <stop offset="95%" stopColor="#facc15" stopOpacity={0.05} />
+                                            <stop offset="5%" stopColor={COLORS[0]} stopOpacity={0.6} />
+                                            <stop offset="95%" stopColor={COLORS[0]} stopOpacity={0.05} />
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
-                                    <XAxis dataKey="name" stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} dy={10} />
-                                    <YAxis stroke="#52525b" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${v}€`} />
+                                    <XAxis dataKey="name" stroke="var(--color-text-muted)" fontSize={10} tickLine={false} axisLine={false} dy={10} />
+                                    <YAxis stroke="var(--color-text-muted)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${v}€`} />
                                     <Tooltip content={<CustomTooltip />} />
-                                    <Area type="monotone" dataKey="value" stroke="#facc15" strokeWidth={3} fillOpacity={1} fill="url(#cumulGrad)" />
+                                    <Area type="monotone" dataKey="value" stroke={COLORS[0]} strokeWidth={3} fillOpacity={1} fill="url(#cumulGrad)" />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
@@ -302,13 +322,13 @@ const AnalyticsCharts = ({ transactions, exchangeRate = 0.92, isPremium = false 
                             <BarChart data={gameData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                                 <defs>
                                     <linearGradient id="barGrad" x1="0" y1="0" x2="1" y2="0">
-                                        <stop offset="0%" stopColor="#facc15" stopOpacity={1} />
-                                        <stop offset="100%" stopColor="#f59e0b" stopOpacity={1} />
+                                        <stop offset="0%" stopColor={COLORS[0]} stopOpacity={1} />
+                                        <stop offset="100%" stopColor={COLORS[7]} stopOpacity={1} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" horizontal={false} />
-                                <XAxis type="number" stroke="#52525b" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${v}€`} />
-                                <YAxis type="category" dataKey="name" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} width={150} tick={{ fill: 'var(--color-text-dim)' }} />
+                                <XAxis type="number" stroke="var(--color-text-muted)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${v}€`} />
+                                <YAxis type="category" dataKey="name" stroke="var(--color-text-muted)" fontSize={12} tickLine={false} axisLine={false} width={150} tick={{ fill: 'var(--color-text-dim)' }} />
                                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--hover-bg)' }} />
                                 <Bar dataKey="value" fill="url(#barGrad)" radius={[0, 12, 12, 0]} barSize={24} />
                             </BarChart>

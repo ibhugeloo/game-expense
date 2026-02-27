@@ -285,7 +285,7 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
                                     key={n}
                                     type="button"
                                     onClick={() => setRating(n)}
-                                    style={{ color: formData.rating >= n ? '#f59e0b' : 'var(--color-text-muted)' }}
+                                    style={{ color: formData.rating >= n ? 'var(--color-accent)' : 'var(--color-text-muted)' }}
                                 >
                                     ★
                                 </button>

@@ -168,7 +168,7 @@ const SettingsModal = ({ onClose, profile, updateProfile, plan, isPremium, onCan
                                     <div style={{
                                         width: 44, height: 44,
                                         background: isPremium
-                                            ? 'linear-gradient(135deg, #f59e0b, #f97316)'
+                                            ? 'var(--color-premium-gradient)'
                                             : 'var(--input-bg)',
                                         borderRadius: 12,
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',

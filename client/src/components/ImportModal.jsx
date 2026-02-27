@@ -120,7 +120,7 @@ const ImportModal = ({ onClose, userId }) => {
               </p>
             )}
             {aiError === 'empty' && (
-              <p style={{ color: '#f59e0b', fontSize: '0.85rem', marginTop: '0.75rem' }}>
+              <p style={{ color: 'var(--color-accent)', fontSize: '0.85rem', marginTop: '0.75rem' }}>
                 {t('import.aiEmpty')}
               </p>
             )}
