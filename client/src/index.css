@@ -756,7 +756,7 @@ textarea:focus {
   font-weight: 700;
   color: var(--color-accent);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.01em;
   margin-bottom: 1rem;
 }
 
@@ -2845,7 +2845,7 @@ textarea:focus {
   padding: 0.5rem 1rem;
   transition: color var(--transition-fast), border-color var(--transition-fast);
   font-family: inherit;
-  margin-top: 0.5rem;
+  margin-top: 1.5rem;
   align-self: center;
 }
 

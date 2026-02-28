@@ -63,7 +63,7 @@ const OnboardingFlow = ({ profile, onComplete }) => {
                 {step === 1 && (
                     <div className="onboarding-step-content">
                         <div className="onboarding-step-icon">
-                            <Gamepad2 size={32} color="white" />
+                            <Gamepad2 size={38} color="white" />
                         </div>
                         <h2>{t('onboarding.step1Title')}</h2>
                         <p className="onboarding-step-desc">{t('onboarding.step1Desc')}</p>
@@ -127,7 +127,7 @@ const OnboardingFlow = ({ profile, onComplete }) => {
                                 { icon: Globe, key: 'onboarding.tour4' },
                             ].map((f, i) => (
                                 <div key={i} className="onboarding-feature-item">
-                                    <f.icon size={20} />
+                                    <f.icon size={24} />
                                     <span>{t(f.key)}</span>
                                 </div>
                             ))}

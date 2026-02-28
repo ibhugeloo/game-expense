@@ -60,19 +60,19 @@ const StatsOverview = ({ transactions, exchangeRate = 0.92 }) => {
         },
         {
             label: t('stats.totalSpent'),
-            value: `${formatCurrency(totalSpent, i18n.language)} €`,
+            value: `${formatCurrency(totalSpent, i18n.language)}\u00A0€`,
             trend: trends.spent,
             icon: DollarSign,
         },
         {
             label: t('stats.averagePrice'),
-            value: `${avgPrice.toFixed(2)} €`,
+            value: `${formatCurrency(avgPrice, i18n.language)}\u00A0€`,
             trend: null,
             icon: Tag,
         },
         {
             label: t('stats.microTransactions'),
-            value: `${formatCurrency(microTotal, i18n.language)} €`,
+            value: `${formatCurrency(microTotal, i18n.language)}\u00A0€`,
             trend: trends.micro,
             icon: ShoppingCart,
         },
