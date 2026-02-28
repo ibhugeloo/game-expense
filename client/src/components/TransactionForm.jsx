@@ -255,6 +255,7 @@ const TransactionForm = ({ onAddTransaction, initialData = null, games = [] }) =
                             <option value="Xbox Series">Xbox Series</option>
                             <option value="Xbox One">Xbox One</option>
                             <option value="Mobile">Mobile</option>
+                            <option value="Console">Console</option>
                         </select>
                     </div>
 

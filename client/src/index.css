@@ -615,6 +615,52 @@ textarea:focus {
   color: #B07CD8;
 }
 
+/* ====== PLATFORM BADGES ====== */
+.badge-platform-pc {
+  background: rgba(108, 135, 178, 0.15);
+  color: #6C87B2;
+}
+
+.badge-platform-steam {
+  background: rgba(102, 143, 196, 0.15);
+  color: #668FC4;
+}
+
+.badge-platform-ps5 {
+  background: rgba(0, 112, 210, 0.15);
+  color: #0070D2;
+}
+
+.badge-platform-ps4 {
+  background: rgba(0, 75, 175, 0.15);
+  color: #3B7DD8;
+}
+
+.badge-platform-switch {
+  background: rgba(228, 40, 40, 0.15);
+  color: #E42828;
+}
+
+.badge-platform-xbox-series {
+  background: rgba(16, 124, 16, 0.15);
+  color: #2DB72D;
+}
+
+.badge-platform-xbox-one {
+  background: rgba(16, 124, 16, 0.15);
+  color: #1A9A1A;
+}
+
+.badge-platform-mobile {
+  background: rgba(168, 132, 214, 0.15);
+  color: #A884D6;
+}
+
+.badge-platform-console {
+  background: rgba(212, 168, 83, 0.15);
+  color: #D4A853;
+}
+
 /* ====== TRANSACTION TYPE BADGES ====== */
 .badge-type {
   padding: 4px 10px;

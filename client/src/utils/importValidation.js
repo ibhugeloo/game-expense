@@ -1,6 +1,6 @@
 // Valid enum values matching TransactionForm.jsx and DB schema
 export const VALID_TYPES = ['game', 'dlc', 'skin', 'battle_pass', 'currency', 'loot_box', 'subscription'];
-export const VALID_PLATFORMS = ['PC', 'Steam', 'PS5', 'PS4', 'Switch', 'Xbox Series', 'Xbox One', 'Mobile'];
+export const VALID_PLATFORMS = ['PC', 'Steam', 'PS5', 'PS4', 'Switch', 'Xbox Series', 'Xbox One', 'Mobile', 'Console'];
 export const VALID_CURRENCIES = ['EUR', 'USD', 'GBP', 'JPY'];
 export const VALID_STATUSES = ['Backlog', 'Playing', 'Completed', 'Wishlist', 'Abandoned'];
 export const VALID_GENRES = [
@@ -29,6 +29,7 @@ export const PLATFORM_ALIASES = {
   'xbox series': 'Xbox Series', 'xbox series x': 'Xbox Series', 'xbox series s': 'Xbox Series', 'xsx': 'Xbox Series',
   'xbox one': 'Xbox One', 'xone': 'Xbox One', 'xb1': 'Xbox One',
   'mobile': 'Mobile', 'ios': 'Mobile', 'android': 'Mobile', 'phone': 'Mobile', 'téléphone': 'Mobile',
+  'console': 'Console',
 };
 
 export const STATUS_ALIASES = {

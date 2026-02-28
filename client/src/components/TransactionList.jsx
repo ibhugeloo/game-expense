@@ -291,7 +291,7 @@ const TransactionList = ({ transactions, onDelete, onEdit, exchangeRate = 0.92, 
                                             </div>
                                         </div>
                                     </td>
-                                    <td><span className="badge" style={{ background: 'var(--card-highlight)' }}>{tx.platform}</span></td>
+                                    <td><span className={`badge badge-platform-${tx.platform.toLowerCase().replace(/\s+/g, '-')}`}>{tx.platform}</span></td>
                                     <td style={{ whiteSpace: 'nowrap' }}>{parseFloat(tx.price).toFixed(2)} {tx.currency}</td>
                                     <td>
                                         {tx.rating ? (

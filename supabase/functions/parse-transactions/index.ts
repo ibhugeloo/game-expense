@@ -14,7 +14,7 @@ For each transaction you find, return a JSON object with these fields:
 - type (string): one of: game, dlc, skin, battle_pass, currency, loot_box, subscription. Default: "game"
 - price (number): the price as a number. Handle comma decimals (29,99 → 29.99). Default: 0
 - currency (string): one of: EUR, USD, GBP, JPY. Infer from symbols (€=EUR, $=USD, £=GBP, ¥=JPY). Default: "EUR"
-- platform (string): one of: PC, Steam, PS5, PS4, Switch, Xbox Series, Xbox One, Mobile. Default: "PC"
+- platform (string): one of: PC, Steam, PS5, PS4, Switch, Xbox Series, Xbox One, Mobile, Console. Default: "PC"
 - genre (string): one of: FPS, RPG, MOBA, Racing, Action-Adventure, Rogue-like, Sports, Strategy, Gacha, Card Game, Simulation, Horror, Puzzle, Platformer, Battle Royale, Other. Default: "Other"
 - store (string): the store name if mentioned (e.g. Steam, Amazon, Epic Games). Default: ""
 - status (string): one of: Backlog, Playing, Completed, Wishlist, Abandoned. Default: "Backlog"
