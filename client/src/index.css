@@ -2380,8 +2380,9 @@ textarea:focus {
   font-size: clamp(2.2rem, 5vw, 3.5rem);
   font-weight: 800;
   letter-spacing: -1.5px;
-  line-height: 1.1;
+  line-height: 1.2;
   margin: 0 0 1.25rem;
+  padding-bottom: 0.05em;
   background: linear-gradient(135deg, var(--color-text) 0%, var(--color-accent) 50%, var(--color-mint) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
